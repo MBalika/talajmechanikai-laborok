@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Talajmechanikai laborok</title>
+<meta name="description" content="Animációs oktatóvideók a talajmechanikai laborvizsgálatokról: mintavétel, próbatest, vizsgálat, kiértékelés.">
+<meta name="theme-color" content="#0e1014">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230e1014'/%3E%3Crect x='22' y='12' width='20' height='40' rx='4' fill='%23B48CFF'/%3E%3Cpath d='M22 40 42 26' stroke='%230e1014' stroke-width='4'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0e1014; --bg2: #161a20; --line: rgba(255,255,255,.09); --ink: #eef0f3; --dim: #9aa3ad;
+  --acc: #B48CFF; --uu: #FF8A4C; --cu: #3FE0C5; --cd: #F2C14E;
+  --fh: "Barlow Condensed", "Arial Narrow", sans-serif; --fb: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 400 16px/1.6 var(--fb); -webkit-font-smoothing: antialiased; }
+a { color: inherit; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+.nb { white-space: nowrap; }
+
+/* fejléc */
+.hero { position: relative; overflow: hidden; border-bottom: 1px solid var(--line); }
+.hero::before { content: ""; position: absolute; inset: 0; background: url(assets/hero.jpg) center 40% / cover no-repeat; opacity: .32; filter: saturate(.9); }
+.hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, var(--bg) 18%, rgba(14,16,20,.55) 60%, rgba(14,16,20,.2)), linear-gradient(0deg, var(--bg), transparent 45%); }
+.hero .wrap { position: relative; z-index: 1; padding-top: 88px; padding-bottom: 72px; }
+.kicker { font: 700 15px/1 var(--fh); letter-spacing: .14em; text-transform: uppercase; color: var(--acc); margin: 0 0 18px; }
+h1 { font: 800 clamp(48px, 8vw, 96px)/.92 var(--fh); letter-spacing: -.01em; margin: 0 0 22px; max-width: 12ch; }
+.lead { font-size: clamp(17px, 2vw, 19px); color: #cfd4da; max-width: 46ch; margin: 0; }
+.bar { width: 120px; height: 4px; background: var(--acc); border-radius: 2px; margin: 0 0 26px; }
+
+/* videók */
+main { padding: 56px 0 72px; }
+h2 { font: 700 28px/1.1 var(--fh); letter-spacing: .02em; text-transform: uppercase; margin: 0 0 22px; color: var(--dim); }
+.grid { display: grid; grid-template-columns: 1fr; gap: 24px; }
+.card { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); background: var(--bg2); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; }
+.thumb { position: relative; display: block; aspect-ratio: 16 / 9; background: #000; cursor: pointer; border: 0; padding: 0; width: 100%; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s ease, filter .3s; }
+.thumb:hover img, .thumb:focus-visible img { transform: scale(1.03); filter: brightness(1.08); }
+.play { position: absolute; left: 50%; top: 50%; width: 84px; height: 84px; margin: -42px 0 0 -42px; border-radius: 50%; background: var(--acc); display: grid; place-items: center; box-shadow: 0 10px 40px rgba(180,140,255,.45); transition: transform .2s; }
+.thumb:hover .play { transform: scale(1.08); }
+.play svg { width: 32px; height: 32px; margin-left: 5px; }
+.dur { position: absolute; right: 12px; bottom: 12px; font: 600 13px/1 var(--fb); background: rgba(0,0,0,.72); padding: 6px 8px; border-radius: 6px; }
+.info { padding: 28px 30px 30px; display: flex; flex-direction: column; }
+.num { font: 700 14px/1 var(--fh); letter-spacing: .14em; text-transform: uppercase; color: var(--acc); margin-bottom: 10px; }
+h3 { font: 800 clamp(34px, 4vw, 44px)/1 var(--fh); margin: 0 0 14px; }
+.tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; padding: 0; list-style: none; }
+.tags li { font: 700 15px/1 var(--fh); letter-spacing: .06em; padding: 7px 11px 6px; border-radius: 6px; color: #111; }
+.info p { margin: 0 0 14px; color: #c9cfd6; }
+.steps { margin: 4px 0 22px; padding: 0; list-style: none; color: var(--dim); font-size: 15px; }
+.steps li { padding: 5px 0 5px 22px; position: relative; border-top: 1px solid var(--line); }
+.steps li::before { content: ""; position: absolute; left: 2px; top: 14px; width: 8px; height: 8px; border-radius: 2px; background: var(--acc); }
+.actions { margin-top: auto; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.btn { appearance: none; border: 0; cursor: pointer; font: 600 15px/1 var(--fb); padding: 13px 18px; border-radius: 10px; background: var(--acc); color: #120d1c; text-decoration: none; }
+.btn.ghost { background: transparent; color: var(--ink); border: 1px solid rgba(255,255,255,.22); }
+.btn:hover { filter: brightness(1.08); }
+.soon { border: 1px dashed rgba(255,255,255,.16); border-radius: 18px; padding: 26px 30px; color: var(--dim); display: flex; gap: 18px; align-items: center; }
+.soon b { font: 700 22px/1 var(--fh); color: var(--ink); letter-spacing: .02em; }
+.soon span { display: block; margin-top: 6px; }
+.hint { font-size: 14px; color: var(--dim); margin: 22px 0 0; }
+kbd { font: 600 12px/1 var(--fb); border: 1px solid rgba(255,255,255,.25); border-bottom-width: 2px; border-radius: 4px; padding: 2px 6px; }
+
+footer { border-top: 1px solid var(--line); padding: 28px 0 40px; color: var(--dim); font-size: 13px; }
+footer p { margin: 0 0 6px; max-width: 80ch; }
+
+/* lejátszó ablak */
+.modal { position: fixed; inset: 0; z-index: 50; background: rgba(5,6,8,.92); display: none; align-items: center; justify-content: center; padding: 24px; }
+.modal.open { display: flex; }
+.frame { position: relative; width: min(100%, calc((100vh - 48px) * 16 / 9)); aspect-ratio: 16 / 9; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,.6); }
+.frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.close { position: absolute; top: 14px; right: 14px; z-index: 2; width: 44px; height: 44px; border-radius: 50%; border: 0; background: rgba(255,255,255,.12); color: #fff; font-size: 26px; line-height: 44px; cursor: pointer; }
+.close:hover { background: rgba(255,255,255,.22); }
+
+@media (max-width: 860px) {
+  .card { grid-template-columns: 1fr; }
+  .info { padding: 22px 20px 24px; }
+}
+@media (max-width: 560px) {
+  .wrap { padding: 0 16px; }
+  .hero .wrap { padding-top: 56px; padding-bottom: 48px; }
+  .modal { padding: 0; }
+  .frame { border-radius: 0; width: 100%; }
+  .close { top: 8px; right: 8px; }
+  .soon { flex-direction: column; align-items: flex-start; padding: 22px 20px; }
+}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <p class="kicker">Talajmechanikai laborok</p>
+    <h1>Animációs laborvideók</h1>
+    <div class="bar"></div>
+    <p class="lead">Rövid, látványos videók a talajmechanikai laborvizsgálatokról: a&nbsp;mintavételtől a&nbsp;kiértékelésig, modern, automata berendezésekkel.</p>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <h2>Videók</h2>
+    <div class="grid">
+      <article class="card">
+        <button class="thumb" type="button" data-video="videok/1_Triaxialis_vizsgalat_video.html" aria-label="Triaxiális vizsgálat – lejátszás">
+          <img src="assets/p1.jpg" alt="Triaxiális vizsgálat – címkép a laborral" width="1280" height="720">
+          <span class="play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l15 8-15 8z" fill="#120d1c"/></svg></span>
+          <span class="dur">4:45</span>
+        </button>
+        <div class="info">
+          <div class="num">1. rész</div>
+          <h3>Triaxiális vizsgálat</h3>
+          <ul class="tags">
+            <li style="background:var(--uu)">UU</li><li style="background:var(--cu)">CU</li><li style="background:var(--cd)">CD</li>
+          </ul>
+          <p>Egy minta, három út: a&nbsp;háromféle triaxiális vizsgálat a&nbsp;mintavételtől a&nbsp;törésig, Mohr‑körökkel és a&nbsp;nyírószilárdsági paraméterekkel.</p>
+          <ul class="steps">
+            <li>Mintavétel vékonyfalú csővel, próbatest‑készítés</li>
+            <li>Beépítés, cella, telítés és konszolidáció</li>
+            <li>Nyírás a&nbsp;törésig, pórusvíznyomás, térfogatváltozás</li>
+            <li class="nb">c<sub>u</sub>, illetve c′ és φ′ meghatározása</li>
+          </ul>
+          <div class="actions">
+            <button class="btn" type="button" data-video="videok/1_Triaxialis_vizsgalat_video.html">Lejátszás</button>
+            <a class="btn ghost" href="videok/1_Triaxialis_vizsgalat_video" target="_blank" rel="noopener">Megnyitás új lapon</a>
+          </div>
+        </div>
+      </article>
+
+      <div class="soon">
+        <b>További részek hamarosan</b>
+        <span>A&nbsp;sorozat a&nbsp;többi talajmechanikai laborvizsgálattal folytatódik.</span>
+      </div>
+    </div>
+    <p class="hint">A&nbsp;lejátszóban: <kbd>Szóköz</kbd> szünet, <kbd>←</kbd> <kbd>→</kbd> léptetés, <kbd>F</kbd> teljes képernyő, <kbd>Esc</kbd> bezárás.</p>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Talajmechanikai laborok – animációs oktatóvideók. A&nbsp;videókban szereplő számértékek szemléltető mintapéldák.</p>
+    <p>Zene: valódi hangszerek felvett mintáiból. Hangminták: Salamander Grand Piano (Alexander Holm, CC&nbsp;BY&nbsp;3.0); tonejs-instruments (nbrosowsky; VSCO2, Karoryfer, Iowa, Freesound – CC&nbsp;BY&nbsp;3.0); Tone.js dobminták.</p>
+  </div>
+</footer>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-label="Videó lejátszása">
+  <div class="frame">
+    <button class="close" type="button" id="close" aria-label="Bezárás">×</button>
+    <iframe id="player" title="Videó" allow="autoplay; fullscreen" allowfullscreen></iframe>
+  </div>
+</div>
+
+<script>
+(() => {
+  const modal = document.getElementById('modal'), player = document.getElementById('player');
+  let last = null;
+  const open = (src, from) => { last = from; player.src = src; modal.classList.add('open'); document.body.style.overflow = 'hidden'; setTimeout(() => { try { player.focus(); } catch (e) {} }, 300); };
+  const close = () => { modal.classList.remove('open'); player.src = 'about:blank'; document.body.style.overflow = ''; if (last) last.focus(); };
+  document.querySelectorAll('[data-video]').forEach(b => b.addEventListener('click', () => open(b.dataset.video, b)));
+  document.getElementById('close').addEventListener('click', close);
+  modal.addEventListener('click', e => { if (e.target === modal) close(); });
+  addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('open')) close(); });
+  addEventListener('message', e => { if (e.data === 'ka-close-video') close(); });
+})();
+</script>
+</body>
+</html>

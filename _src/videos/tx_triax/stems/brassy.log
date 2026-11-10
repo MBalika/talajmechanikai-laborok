@@ -1,0 +1,3 @@
+hangszerelés: brassy lead trumpet bpm 110 
+busz-RMS dB: {'drums': np.float32(-20.8), 'bass': np.float32(-30.7), 'keys': np.float32(-24.2), 'gtr': np.float32(-32.9), 'str': np.float32(-38.8), 'lead': np.float32(-28.5), 'spark': np.float32(-180.0), 'brass': np.float32(-33.6)} mély 0.41
+stem stems/brassy.npz brassy

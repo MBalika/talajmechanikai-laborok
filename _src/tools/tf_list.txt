@@ -1,0 +1,17 @@
+tf_hord	01_Hordozhato_motoros_furas_video	Hordozható motoros talajfúrás
+tf_gsp	02_Gepi_spiralfurasok_video	Gépi spirálfúrások
+tf_hsa	03_Ureges_csospiral_video	Üreges csőspirál
+tf_gbs	04_Geobor_S_video	Geobor S magfúrás
+tf_cptu	05_CPTu_szondazas_video	CPTu szondázás
+tf_dp	06_DP_veroszondazas_video	Dinamikus verőszondázás
+tf_spt	07_SPT_szondazas_video	SPT szondázás
+tf_vst	08_Szarnyas_nyiroszondazas_video	Szárnyas nyírószondázás
+tf_pmt	09_Pressziometer_video	Presszióméter
+tf_dmt	10_DMT_lapdilatometer_video	Lapdilatométer (DMT)
+tf_emi	11_EMI_elektromagneses_indukcio_video	Elektromágneses indukció (EMI)
+tf_gpr	12_GPR_foldradar_video	Földradar (GPR)
+tf_ert	13_ERT_geoelektromos_tomografia_video	Geoelektromos tomográfia (ERT)
+tf_mag	14_Magneses_meres_video	Mágneses mérés
+tf_ref	15_Szeizmikus_refrakcio_tomografia_video	Szeizmikus refrakció és tomográfia
+tf_rfl	16_Szeizmikus_reflexio_video	Szeizmikus reflexió
+tf_masw	17_MASW_feluleti_hullamok_video	MASW – felületi hullámok

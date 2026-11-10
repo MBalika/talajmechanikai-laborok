@@ -1,0 +1,3 @@
+hangszerelés: funk lead trumpet bpm 110 
+busz-RMS dB: {'drums': np.float32(-19.8), 'bass': np.float32(-31.7), 'keys': np.float32(-24.9), 'gtr': np.float32(-31.5), 'str': np.float32(-38.8), 'lead': np.float32(-28.5), 'spark': np.float32(-180.0), 'brass': np.float32(-32.5)} mély 0.45
+stem stems/funk.npz funk
