@@ -36,18 +36,18 @@ h1 { font: 800 clamp(48px, 8vw, 96px)/.92 var(--fh); letter-spacing: -.01em; mar
 /* videók */
 main { padding: 56px 0 72px; }
 h2 { font: 700 28px/1.1 var(--fh); letter-spacing: .02em; text-transform: uppercase; margin: 0 0 22px; color: var(--dim); }
-.grid { display: grid; grid-template-columns: 1fr; gap: 24px; }
-.card { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); background: var(--bg2); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; margin-bottom: 48px; }
+.card { display: flex; flex-direction: column; background: var(--bg2); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; }
 .thumb { position: relative; display: block; aspect-ratio: 16 / 9; background: #000; cursor: pointer; border: 0; padding: 0; width: 100%; }
 .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s ease, filter .3s; }
 .thumb:hover img, .thumb:focus-visible img { transform: scale(1.03); filter: brightness(1.08); }
-.play { position: absolute; left: 50%; top: 50%; width: 84px; height: 84px; margin: -42px 0 0 -42px; border-radius: 50%; background: var(--acc); display: grid; place-items: center; box-shadow: 0 10px 40px rgba(180,140,255,.45); transition: transform .2s; }
+.play { position: absolute; left: 80%; top: 50%; width: 84px; height: 84px; margin: -42px 0 0 -42px; border-radius: 50%; background: var(--acc); display: grid; place-items: center; box-shadow: 0 10px 40px rgba(180,140,255,.45); transition: transform .2s; }
 .thumb:hover .play { transform: scale(1.08); }
 .play svg { width: 32px; height: 32px; margin-left: 5px; }
 .dur { position: absolute; right: 12px; bottom: 12px; font: 600 13px/1 var(--fb); background: rgba(0,0,0,.72); padding: 6px 8px; border-radius: 6px; }
-.info { padding: 28px 30px 30px; display: flex; flex-direction: column; }
+.info { padding: 22px 24px 24px; display: flex; flex-direction: column; flex: 1; }
 .num { font: 700 14px/1 var(--fh); letter-spacing: .14em; text-transform: uppercase; color: var(--acc); margin-bottom: 10px; }
-h3 { font: 800 clamp(34px, 4vw, 44px)/1 var(--fh); margin: 0 0 14px; }
+h3 { font: 800 clamp(30px, 3.4vw, 38px)/1 var(--fh); margin: 0 0 12px; }
 .tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; padding: 0; list-style: none; }
 .tags li { font: 700 15px/1 var(--fh); letter-spacing: .06em; padding: 7px 11px 6px; border-radius: 6px; color: #111; }
 .info p { margin: 0 0 14px; color: #c9cfd6; }
@@ -76,7 +76,7 @@ footer p { margin: 0 0 6px; max-width: 80ch; }
 .close:hover { background: rgba(255,255,255,.22); }
 
 @media (max-width: 860px) {
-  .card { grid-template-columns: 1fr; }
+  .grid { grid-template-columns: 1fr; }
   .info { padding: 22px 20px 24px; }
 }
 @media (max-width: 560px) {
@@ -95,44 +95,164 @@ footer p { margin: 0 0 6px; max-width: 80ch; }
     <p class="kicker">Talajmechanikai laborok</p>
     <h1>Animációs laborvideók</h1>
     <div class="bar"></div>
-    <p class="lead">Rövid, látványos videók a talajmechanikai laborvizsgálatokról: a&nbsp;mintavételtől a&nbsp;kiértékelésig, modern, automata berendezésekkel.</p>
+    <p class="lead">Kilenc rövid, látványos videó a talajmechanikai laborvizsgálatokról, lépésről lépésre, az Eurocode&nbsp;7 szerinti EN&nbsp;ISO szabványok alapján: a&nbsp;próbatesttől a&nbsp;kiértékelésig.</p>
   </div>
 </header>
 
 <main>
   <div class="wrap">
-    <h2>Videók</h2>
+    <h2>Osztályozó vizsgálatok</h2>
     <div class="grid">
       <article class="card">
-        <button class="thumb" type="button" data-video="videok/1_Triaxialis_vizsgalat_video.html" aria-label="Triaxiális vizsgálat – lejátszás">
-          <img src="assets/p1.jpg" alt="Triaxiális vizsgálat – címkép a laborral" width="1280" height="720">
+        <button class="thumb" type="button" data-video="videok/01_Szemeloszlasi_vizsgalat.html" aria-label="Szemeloszlási vizsgálat – lejátszás">
+          <img src="assets/p01.jpg" alt="Szemeloszlási vizsgálat – címkép" width="1280" height="720" loading="lazy">
+          <span class="play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l15 8-15 8z" fill="#120d1c"/></svg></span>
+          <span class="dur">2:21</span>
+        </button>
+        <div class="info">
+          <div class="num">1. rész · EN ISO 17892-4</div>
+          <h3>Szemeloszlási vizsgálat</h3>
+          <p>Szárítás, nedves szitálás, szitasor és rázógép, majd hidrometrálás: a teljes szemeloszlási görbe, C<sub>U</sub> és C<sub>C</sub>.</p>
+          <div class="actions">
+            <button class="btn" type="button" data-video="videok/01_Szemeloszlasi_vizsgalat.html">Lejátszás</button>
+            <a class="btn ghost" href="videok/01_Szemeloszlasi_vizsgalat" target="_blank" rel="noopener">Új lapon</a>
+          </div>
+        </div>
+      </article>
+      <article class="card">
+        <button class="thumb" type="button" data-video="videok/02_Folyasi_hatar.html" aria-label="Folyási határ – lejátszás">
+          <img src="assets/p02.jpg" alt="Folyási határ – címkép" width="1280" height="720" loading="lazy">
+          <span class="play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l15 8-15 8z" fill="#120d1c"/></svg></span>
+          <span class="dur">1:55</span>
+        </button>
+        <div class="info">
+          <div class="num">2. rész · EN ISO 17892-12</div>
+          <h3>Folyási határ</h3>
+          <p>Ejtőkúp (80&nbsp;g, 30°, 20&nbsp;mm) és Casagrande-csésze (25&nbsp;ütés), szemilogaritmikus kiértékelés.</p>
+          <div class="actions">
+            <button class="btn" type="button" data-video="videok/02_Folyasi_hatar.html">Lejátszás</button>
+            <a class="btn ghost" href="videok/02_Folyasi_hatar" target="_blank" rel="noopener">Új lapon</a>
+          </div>
+        </div>
+      </article>
+      <article class="card">
+        <button class="thumb" type="button" data-video="videok/03_Sodrasi_hatar.html" aria-label="Sodrási határ – lejátszás">
+          <img src="assets/p03.jpg" alt="Sodrási határ – címkép" width="1280" height="720" loading="lazy">
+          <span class="play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l15 8-15 8z" fill="#120d1c"/></svg></span>
+          <span class="dur">1:38</span>
+        </button>
+        <div class="info">
+          <div class="num">3. rész · EN ISO 17892-12</div>
+          <h3>Sodrási határ</h3>
+          <p>A 3&nbsp;mm-es szál sodrása a morzsolódásig; w<sub>P</sub>, plaszticitási és konzisztenciaindex.</p>
+          <div class="actions">
+            <button class="btn" type="button" data-video="videok/03_Sodrasi_hatar.html">Lejátszás</button>
+            <a class="btn ghost" href="videok/03_Sodrasi_hatar" target="_blank" rel="noopener">Új lapon</a>
+          </div>
+        </div>
+      </article>
+      <article class="card">
+        <button class="thumb" type="button" data-video="videok/04_Zsugorodasi_hatar.html" aria-label="Zsugorodási határ – lejátszás">
+          <img src="assets/p04.jpg" alt="Zsugorodási határ – címkép" width="1280" height="720" loading="lazy">
+          <span class="play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l15 8-15 8z" fill="#120d1c"/></svg></span>
+          <span class="dur">1:38</span>
+        </button>
+        <div class="info">
+          <div class="num">4. rész · Kis Talajmechanika</div>
+          <h3>Zsugorodási határ</h3>
+          <p>Ø&nbsp;25&nbsp;×&nbsp;25&nbsp;mm-es henger kétlépcsős szárítása; lineáris zsugorodás és w<sub>S</sub>.</p>
+          <div class="actions">
+            <button class="btn" type="button" data-video="videok/04_Zsugorodasi_hatar.html">Lejátszás</button>
+            <a class="btn ghost" href="videok/04_Zsugorodasi_hatar" target="_blank" rel="noopener">Új lapon</a>
+          </div>
+        </div>
+      </article>
+      <article class="card">
+        <button class="thumb" type="button" data-video="videok/05_Szervesanyag_tartalom.html" aria-label="Szervesanyag-tartalom – lejátszás">
+          <img src="assets/p05.jpg" alt="Szervesanyag-tartalom – címkép" width="1280" height="720" loading="lazy">
+          <span class="play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l15 8-15 8z" fill="#120d1c"/></svg></span>
+          <span class="dur">1:38</span>
+        </button>
+        <div class="info">
+          <div class="num">5. rész · EN 17685-1</div>
+          <h3>Szervesanyag-tartalom</h3>
+          <p>Izzítási veszteség 550&nbsp;°C-on: tégely, izzítókemence, exszikkátor, w<sub>LOI</sub>.</p>
+          <div class="actions">
+            <button class="btn" type="button" data-video="videok/05_Szervesanyag_tartalom.html">Lejátszás</button>
+            <a class="btn ghost" href="videok/05_Szervesanyag_tartalom" target="_blank" rel="noopener">Új lapon</a>
+          </div>
+        </div>
+      </article>
+    </div>
+    <h2>Alakváltozás</h2>
+    <div class="grid">
+      <article class="card">
+        <button class="thumb" type="button" data-video="videok/06_Kompresszios_vizsgalat.html" aria-label="Kompressziós vizsgálat – lejátszás">
+          <img src="assets/p06.jpg" alt="Kompressziós vizsgálat – címkép" width="1280" height="720" loading="lazy">
+          <span class="play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l15 8-15 8z" fill="#120d1c"/></svg></span>
+          <span class="dur">2:04</span>
+        </button>
+        <div class="info">
+          <div class="num">6. rész · EN ISO 17892-5</div>
+          <h3>Kompressziós vizsgálat</h3>
+          <p>Ödométer, lépcsős terhelés; σ–ε és log&nbsp;σ′–e görbe, E<sub>oed</sub>, C<sub>c</sub>, C<sub>s</sub>, σ′<sub>p</sub>.</p>
+          <div class="actions">
+            <button class="btn" type="button" data-video="videok/06_Kompresszios_vizsgalat.html">Lejátszás</button>
+            <a class="btn ghost" href="videok/06_Kompresszios_vizsgalat" target="_blank" rel="noopener">Új lapon</a>
+          </div>
+        </div>
+      </article>
+      <article class="card">
+        <button class="thumb" type="button" data-video="videok/07_Konszolidacios_vizsgalat.html" aria-label="Konszolidációs vizsgálat – lejátszás">
+          <img src="assets/p07.jpg" alt="Konszolidációs vizsgálat – címkép" width="1280" height="720" loading="lazy">
+          <span class="play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l15 8-15 8z" fill="#120d1c"/></svg></span>
+          <span class="dur">1:46</span>
+        </button>
+        <div class="info">
+          <div class="num">7. rész · EN ISO 17892-5</div>
+          <h3>Konszolidációs vizsgálat</h3>
+          <p>Egy terhelési lépcső idő–összenyomódás görbéje; Taylor- és Casagrande-módszer, c<sub>v</sub> és k.</p>
+          <div class="actions">
+            <button class="btn" type="button" data-video="videok/07_Konszolidacios_vizsgalat.html">Lejátszás</button>
+            <a class="btn ghost" href="videok/07_Konszolidacios_vizsgalat" target="_blank" rel="noopener">Új lapon</a>
+          </div>
+        </div>
+      </article>
+    </div>
+    <h2>Nyírószilárdság</h2>
+    <div class="grid">
+      <article class="card">
+        <button class="thumb" type="button" data-video="videok/08_Kozvetlen_nyirovizsgalat.html" aria-label="Közvetlen nyíróvizsgálat – lejátszás">
+          <img src="assets/p08.jpg" alt="Közvetlen nyíróvizsgálat – címkép" width="1280" height="720" loading="lazy">
+          <span class="play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l15 8-15 8z" fill="#120d1c"/></svg></span>
+          <span class="dur">1:51</span>
+        </button>
+        <div class="info">
+          <div class="num">8. rész · EN ISO 17892-10</div>
+          <h3>Közvetlen nyíróvizsgálat</h3>
+          <p>Nyíródoboz, három normálfeszültség, τ–δ görbék és a Coulomb-egyenes: c′ és φ′.</p>
+          <div class="actions">
+            <button class="btn" type="button" data-video="videok/08_Kozvetlen_nyirovizsgalat.html">Lejátszás</button>
+            <a class="btn ghost" href="videok/08_Kozvetlen_nyirovizsgalat" target="_blank" rel="noopener">Új lapon</a>
+          </div>
+        </div>
+      </article>
+      <article class="card">
+        <button class="thumb" type="button" data-video="videok/09_Triaxialis_vizsgalat.html" aria-label="Triaxiális vizsgálat – lejátszás">
+          <img src="assets/p09.jpg" alt="Triaxiális vizsgálat – címkép" width="1280" height="720" loading="lazy">
           <span class="play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l15 8-15 8z" fill="#120d1c"/></svg></span>
           <span class="dur">4:45</span>
         </button>
         <div class="info">
-          <div class="num">1. rész</div>
+          <div class="num">9. rész · EN ISO 17892-8, -9</div>
           <h3>Triaxiális vizsgálat</h3>
-          <ul class="tags">
-            <li style="background:var(--uu)">UU</li><li style="background:var(--cu)">CU</li><li style="background:var(--cd)">CD</li>
-          </ul>
-          <p>Egy minta, három út: a&nbsp;háromféle triaxiális vizsgálat a&nbsp;mintavételtől a&nbsp;törésig, Mohr‑körökkel és a&nbsp;nyírószilárdsági paraméterekkel.</p>
-          <ul class="steps">
-            <li>Mintavétel vékonyfalú csővel, próbatest‑készítés</li>
-            <li>Beépítés, cella, telítés és konszolidáció</li>
-            <li>Nyírás a&nbsp;törésig, pórusvíznyomás, térfogatváltozás</li>
-            <li class="nb">c<sub>u</sub>, illetve c′ és φ′ meghatározása</li>
-          </ul>
+          <p>UU, CU és CD: a lezárt mintacsőtől a lépésenkénti beépítésen át a törésig, Mohr-körökkel.</p>
           <div class="actions">
-            <button class="btn" type="button" data-video="videok/1_Triaxialis_vizsgalat_video.html">Lejátszás</button>
-            <a class="btn ghost" href="videok/1_Triaxialis_vizsgalat_video" target="_blank" rel="noopener">Megnyitás új lapon</a>
+            <button class="btn" type="button" data-video="videok/09_Triaxialis_vizsgalat.html">Lejátszás</button>
+            <a class="btn ghost" href="videok/09_Triaxialis_vizsgalat" target="_blank" rel="noopener">Új lapon</a>
           </div>
         </div>
       </article>
-
-      <div class="soon">
-        <b>További részek hamarosan</b>
-        <span>A&nbsp;sorozat a&nbsp;többi talajmechanikai laborvizsgálattal folytatódik.</span>
-      </div>
     </div>
     <p class="hint">A&nbsp;lejátszóban: <kbd>Szóköz</kbd> szünet, <kbd>←</kbd> <kbd>→</kbd> léptetés, <kbd>F</kbd> teljes képernyő, <kbd>Esc</kbd> bezárás.</p>
   </div>
@@ -140,7 +260,7 @@ footer p { margin: 0 0 6px; max-width: 80ch; }
 
 <footer>
   <div class="wrap">
-    <p>Talajmechanikai laborok – animációs oktatóvideók. A&nbsp;videókban szereplő számértékek szemléltető mintapéldák.</p>
+    <p>Talajmechanikai laborok – animációs oktatóvideók. Szabványok: EN&nbsp;ISO 17892-4, -5, -8, -9, -10, -12; EN&nbsp;17685-1; EN&nbsp;ISO 14688-2; zsugorodás: Kis Talajmechanika (2026). A&nbsp;videókban szereplő számértékek szemléltető mintapéldák.</p>
     <p>Zene: valódi hangszerek felvett mintáiból. Hangminták: Salamander Grand Piano (Alexander Holm, CC&nbsp;BY&nbsp;3.0); tonejs-instruments (nbrosowsky; VSCO2, Karoryfer, Iowa, Freesound – CC&nbsp;BY&nbsp;3.0); Tone.js dobminták.</p>
   </div>
 </footer>

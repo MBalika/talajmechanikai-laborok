@@ -1,0 +1,11 @@
+import { startApp } from '../../kit/app.js';
+import { setAccent } from '../../kit/x_stab.js';
+import { makeScene } from '../tm_lab/scene.js';
+import * as APP from './app.js';
+import { drawOverlay } from './script.js';
+import { TOTAL, tb } from './timeline.js';
+import { SHOTS } from './shots.js';
+import soundUrl from './music.mp3';
+setAccent('#B48CFF');
+const { init, render } = makeScene(APP, SHOTS, tb, { board: APP.board });
+startApp({ TOTAL, FILE: 'Kozvetlen_nyirovizsgalat', init, render, drawOverlay, soundUrl, warm: SHOTS.map(s => (s.t0 + s.t1) / 2) });

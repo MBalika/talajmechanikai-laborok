@@ -9,8 +9,8 @@ export const TOTAL = tb(END_BAR) + 2.0;
 const inW = (t, b0, b1) => t >= tb(b0) && t < tb(b1);
 
 // ---------- fejezetek ----------
-export const CH = { open: 0, title: 4, samp: 8, prep: 22, app: 36, names: 44, UU: 48, CU: 66, CD: 92, cmp: 112, sum: 122, end: 126 };
-export const CHAPTERS = [[0, 'Intro'], [tb(8), 'Mintavétel'], [tb(22), 'Próbatest'], [tb(36), 'Készülék'], [tb(48), 'UU'], [tb(66), 'CU'], [tb(92), 'CD'], [tb(112), 'Melyiket?'], [tb(122), 'Összegzés']];
+export const CH = { open: 0, title: 4, prep: 8, mount: 20, app: 36, names: 44, UU: 48, CU: 66, CD: 92, cmp: 112, sum: 122, end: 126 };
+export const CHAPTERS = [[0, 'Intro'], [tb(8), 'Próbatest'], [tb(20), 'Beépítés'], [tb(36), 'Készülék'], [tb(48), 'UU'], [tb(66), 'CU'], [tb(92), 'CD'], [tb(112), 'Melyiket?'], [tb(122), 'Összegzés']];
 export const COL = { UU: '#FF8A4C', CU: '#3FE0C5', CD: '#F2C14E', water: '#5CC2F2', acc: '#B48CFF' };
 
 // ---------- talaj (mintapélda) ----------
@@ -31,34 +31,32 @@ export const qCD = (e, qf) => qf * Math.tanh(e / 4.6);
 export const evCD = (e, ev) => ev * Math.tanh(e / 5.5);               // térfogatcsökkenés (összenyomódás) %
 export const EF = { UU: 9, CU: 12, CD: 15 };                          // a törés alakváltozása (UU: csúcs; CU, CD: q_max ≈ a görbe vége)
 
-// ---------- 1. mintavétel (terep) ----------
-// üreges csőspirál a 3,75 m-es mintavételi mélységig (agyagban); a központi dugó már kint; vékonyfalú cső (Ø 76 mm) benyomva 0,8 m-re
-export const DS = 3.75, SEG = 1.5, TUBE = 0.9, PUSH = 0.8;
-// a mintavevő alja (világ-y): leengedés → statikus benyomás → kiemelés
-export function sampler(t) {
-  if (t < tb(11)) return { y: 1.65, core: 0, on: inW(t, 8, 11) };
-  if (t < tb(12, 2)) return { y: lerp(1.65, -DS, smooth(seg(t, tb(11), tb(12, 2)))), core: 0, on: true };
-  if (t < tb(14, 2)) { const u = smooth(seg(t, tb(12, 3), tb(14, 1))); return { y: -DS - PUSH * u, core: PUSH * u, on: true, push: u > 0 && u < 1 }; }
-  if (t < tb(15)) return { y: -DS - PUSH, core: PUSH, on: true };
-  if (t < tb(16, 2)) return { y: lerp(-DS - PUSH, 1.65, smooth(seg(t, tb(15), tb(16, 2)))), core: PUSH, on: true };
-  return { y: 1.65, core: PUSH, on: t < tb(18) };
-}
-export const fieldOn = (t) => t < tb(18);
-export const crateOn = (t) => inW(t, 18, 22);
-export const waxK = (t) => smooth(seg(t, tb(18, 1), tb(19, 1)));     // paraffin + kupak a végeken
-
-// ---------- 2. próbatest ----------
-export const extrudeK = (t) => smooth(seg(t, tb(22, 2), tb(24, 3)));   // a minta kitolása a csőből
-export const pumpA = (t) => (t >= tb(22, 2) && t < tb(24, 3)) ? 0.5 + 0.5 * Math.sin((t - tb(22, 2)) / BEAT * Math.PI) : 0;
-export const trimK = (t) => smooth(seg(t, tb(25, 2), tb(28, 2)));      // Ø 72,6 → Ø 50 mm
-export const latheA = (t) => (Math.floor(seg(t, tb(25, 2), tb(28, 2)) * 8) + smooth(((seg(t, tb(25, 2), tb(28, 2)) * 8) % 1 - 0.55) / 0.45)) * Math.PI / 4;
-export const knifeY = (t) => { const u = (seg(t, tb(25, 2), tb(28, 2)) * 8) % 1; return u < 0.55 ? 1 - smooth(u / 0.55) : smooth((u - 0.55) / 0.45); }; // 1 fent, 0 lent
-// beépítés
-export const MOUNT = { stone: tb(32, 0), paper: tb(32, 1), spec: tb(32, 2), cap: tb(33, 1), memb: tb(33, 3), oring: tb(35, 0) };
-export const membK = (t) => smooth(seg(t, MOUNT.memb, tb(34, 3)));      // a membránfeszítő leereszkedik
-export const oringK = (t) => smooth(seg(t, MOUNT.oring, tb(35, 3)));
-export const cellK = (t) => smooth(seg(t, tb(36, 1), tb(37, 3)));      // az akrilhenger leereszkedik
-export const fillK = (t) => smooth(seg(t, tb(38), tb(39, 3)));         // a cella feltöltése vízzel
+// ---------- 1. próbatest (labor): a lezárt mintacső kibontása, kinyomás, faragás, mérés ----------
+export const DS = 3.75;
+export const capOffK = (t) => smooth(seg(t, tb(9), tb(10)));            // a cső végéről a kupak (paraffinnal) lekerül
+export const extrudeK = (t) => smooth(seg(t, tb(10, 3), tb(13, 1)));    // a minta kitolása a csőből (a behatolás irányában)
+export const pumpA = (t) => (t >= tb(10, 3) && t < tb(13, 1)) ? 0.5 + 0.5 * Math.sin((t - tb(10, 3)) / BEAT * Math.PI) : 0;
+const LA0 = tb(13, 3), LA1 = tb(16, 3);
+export const trimK = (t) => smooth(seg(t, LA0, LA1));                    // Ø 72,6 → Ø 50 mm
+export const latheA = (t) => (Math.floor(seg(t, LA0, LA1) * 8) + smooth(((seg(t, LA0, LA1) * 8) % 1 - 0.55) / 0.45)) * Math.PI / 4;
+export const knifeY = (t) => { const u = (seg(t, LA0, LA1) * 8) % 1; return u < 0.55 ? 1 - smooth(u / 0.55) : smooth((u - 0.55) / 0.45); }; // 1 fent, 0 lent
+export const SCALE0 = 17.5;                                               // mérleg, víztartalom (17,5–20)
+// ---------- 2. beépítés lépésenként (20–38) ----------
+// tálcáról a talpra: szűrőkő + papír (20–21), minta két kézzel (21,5–22,5), felső papír + kő + fejlemez (23–24)
+export const carry = (t, b0, b1) => smooth(seg(t, tb(b0), tb(b1)));
+export const stoneK = (t) => carry(t, 20.25, 21);
+export const specK = (t) => carry(t, 21.5, 22.5);
+export const topK = (t) => carry(t, 23, 23.75);
+export const MOUNT = { stone: tb(21), paper: tb(21), spec: tb(22, 2), cap: tb(23, 3), memb: tb(24, 1), oring: tb(26, 2) };
+export const membK = (t) => smooth(seg(t, MOUNT.memb, tb(25, 3)));      // a membránfeszítő leereszkedik, a vákuum elenged
+export const oringK = (t) => smooth(seg(t, MOUNT.oring, tb(27, 3)));    // két-két O-gyűrű legördítve
+export const strUpK = (t) => smooth(seg(t, tb(27, 3), tb(28, 1)));      // a feszítő lekerül
+export const drainK = (t) => smooth(seg(t, tb(28, 2), tb(29, 2)));      // a fejlemez dréncsöve bekötve
+export const cellK = (t) => smooth(seg(t, tb(30, 1), tb(31, 3)));       // az akrilhenger leereszkedik
+export const nutK = (t) => smooth(seg(t, tb(31, 3), tb(32, 3)));        // a húzórudak anyái
+export const fillK = (t) => smooth(seg(t, tb(33), tb(35)));             // feltöltés alulról, légtelenítő nyitva
+export const ventK = (t) => smooth(seg(t, tb(35, 1), tb(35, 3)));       // a légtelenítő elzárva
+export const appK = (t) => smooth(seg(t, tb(36, 2), tb(37, 2)));        // a tárcsa emel: a rúd felfekszik az erőmérőre
 
 // ---------- 3. vizsgálatok: a cella állapota ----------
 // fázis: 'UU' | 'CU' | 'CD' | null; k: minta sorszáma (0..2); sc: cellanyomás, uB: ellennyomás, u: pórusvíz,
@@ -124,22 +122,20 @@ export function realClock(t) {
 // ---------- hangok ----------
 export function audioEvents(cuts) {
   const sfx = [];
-  // terep: fúrógép alapjárat, hidraulikus benyomás, kiemelés
-  sfx.push({ t: tb(8), type: 'engine', dur: tb(10) - tb(8) + tb(0, 2), g: 0.3, f: 36 });
-  sfx.push({ t: tb(11), type: 'hydraulic', dur: tb(1.5), g: 0.3 }, { t: tb(12, 3), type: 'hydraulic', dur: tb(1.6), g: 0.45 }, { t: tb(15), type: 'hydraulic', dur: tb(1), g: 0.35 });
-  sfx.push({ t: tb(18, 1), type: 'latch', g: 0.5 }, { t: tb(19, 1), type: 'latch', g: 0.5 });
-  // labor: kitoló pumpa, eszterga, kattanások
-  sfx.push({ t: tb(22, 2), type: 'pump', dur: tb(2.25), g: 0.25 }, { t: tb(22, 1.7), type: 'blip', g: 0.4 });
-  for (let k = 0; k < 8; k++) sfx.push({ t: tb(25, 2) + (tb(28, 2) - tb(25, 2)) * (k + 0.55) / 8, type: 'latch', g: 0.25 });
-  sfx.push({ t: tb(30), type: 'databeep', g: 0.5 }, { t: tb(31), type: 'databeep', g: 0.5 });
-  sfx.push({ t: MOUNT.oring + BEAT * 0.6, type: 'latch', g: 0.4 }, { t: MOUNT.oring + BEAT * 1.6, type: 'latch', g: 0.4 }, { t: tb(37, 3), type: 'latch', g: 0.6 });
-  sfx.push({ t: tb(38), type: 'hum', dur: tb(2), g: 0.2, f: 60 });
+  // labor: kupak, kitoló pumpa, eszterga, mérleg, beépítés kattanásai, feltöltés
+  sfx.push({ t: tb(9, 2), type: 'latch', g: 0.4 }, { t: tb(10, 3), type: 'pump', dur: tb(2.5), g: 0.25 }, { t: tb(10, 2.7), type: 'blip', g: 0.4 });
+  for (let k = 0; k < 8; k++) sfx.push({ t: LA0 + (LA1 - LA0) * (k + 0.55) / 8, type: 'latch', g: 0.25 });
+  sfx.push({ t: tb(18), type: 'databeep', g: 0.5 }, { t: tb(19), type: 'databeep', g: 0.5 });
+  sfx.push({ t: tb(21), type: 'latch', g: 0.3 }, { t: tb(22, 2), type: 'latch', g: 0.3 }, { t: tb(23, 3), type: 'latch', g: 0.3 });
+  for (let k = 0; k < 4; k++) sfx.push({ t: MOUNT.oring + BEAT * (0.7 + k * 0.75), type: 'latch', g: 0.4 });
+  sfx.push({ t: tb(31, 3), type: 'latch', g: 0.6 }, { t: tb(32, 1), type: 'latch', g: 0.4 }, { t: tb(33), type: 'hum', dur: tb(2), g: 0.2, f: 60 }, { t: tb(35, 2), type: 'latch', g: 0.5 });
+  sfx.push({ t: tb(36, 2), type: 'hydraulic', dur: tb(1), g: 0.25 });
   // vizsgálatok: szivattyú/motor zümmögés a nyírás alatt, B-próbák csipogása
   sfx.push({ t: tb(48, 1), type: 'hydraulic', dur: tb(1), g: 0.25 }, { t: tb(51), type: 'hum', dur: tb(6), g: 0.22, f: 55 }, { t: tb(55), type: 'impact', g: 0.6 });
   for (const [b, bt] of BTESTS) sfx.push({ t: tb(b, bt), type: 'databeep', g: 0.6 });
   sfx.push({ t: tb(79, 2), type: 'hum', dur: tb(4.5), g: 0.2, f: 55 }, { t: tb(84), type: 'impact', g: 0.5 });
   sfx.push({ t: tb(95, 2), type: 'hum', dur: tb(7.5), g: 0.2, f: 55 });
   return { bpm: BPM, total: TOTAL, sfx, cuts,
-    slams: [{ t: tb(4), kind: 'title' }, ...[8, 22, 36, 44, 48, 66, 92, 112, 122].map(b => ({ t: tb(b), kind: 'word' })), { t: tb(126), kind: 'end' }],
+    slams: [{ t: tb(4), kind: 'title' }, ...[8, 20, 36, 44, 48, 66, 92, 112, 122].map(b => ({ t: tb(b), kind: 'word' })), { t: tb(126), kind: 'end' }],
     steps: [] };
 }

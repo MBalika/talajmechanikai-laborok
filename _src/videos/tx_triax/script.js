@@ -5,23 +5,28 @@ import { runCaptions } from '../../kit/hud.js';
 import { xyChart, PC } from '../../kit/plots.js';
 import { fcard } from '../../kit/x_stab.js';
 import * as TL from './timeline.js';
-import { tb, BEAT, TOTAL, CHAPTERS, COL, UU, CU, CD, SOIL, DS } from './timeline.js';
+import { tb, BEAT, TOTAL, CHAPTERS, COL, UU, CU, CD, SOIL } from './timeline.js';
 import { LX, BT, FRX, FRZ, EXT, LAT, SCL, PC as PCX } from './layout.js';
 import { panel, mohr, springModel, micro, bGauge, namesCard, lanes, chip, pressureArrows, hexA } from './charts.js';
 const B = tb;
 const W3 = (x, y, z) => [LX + x, y, z];
 const CYW = BT + 0.2 + 0.2605 + 0.05;              // a minta közepe vizsgálat közben (világ-y)
 const CAPS = [
-  [B(8, 0.3), B(11), 'Mintavétel', ['*Zavartalan* minta kell:', 'szerkezete, víztartalma *ne változzon*']],
-  [B(11, 0.3), B(15), 'Vékonyfalú cső', ['A fúrólyuk aljáról *ütés nélkül*,', '*egyenletesen* nyomják a talajba']],
-  [B(15, 0.3), B(18), '„A” kategória', ['Csak így kapunk *1. osztályú*,', 'szilárdságra vizsgálható mintát']],
-  [B(18, 0.3), B(22), 'Lezárás, szállítás', ['Végein *paraffin* és kupak,', '*állítva*, rázkódás és fagy nélkül']],
-  [B(22, 0.3), B(25.2), 'Kinyomás', ['A minta a *behatolás irányában*', 'hagyja el a csövet']],
-  [B(25.3), B(29), 'Faragás', ['Ø *50 mm*, magasság *2 × átmérő*,', 'a végek merőlegesek']],
-  [B(29, 0.3), B(32), 'Adatok', ['Méret, tömeg, *víztartalom*', 'a levágott darabokból']],
-  [B(32, 0.3), B(36), 'Beépítés', ['*Gumimembrán* és két-két *O-gyűrű*:', 'a cellavíz nem jut a mintába']],
-  [B(36, 0.3), B(40), 'A cella', ['Akrilhenger, majd *légtelenített* víz', 'a minta köré']],
-  [B(40, 0.3), B(44), 'Vezérlés', ['Cella- és ellennyomás, erő, elmozdulás:', '*mindent* a számítógép szabályoz és mér']],
+  [B(8, 0.3), B(10.5), 'A minta a laborban', ['Lezárt mintacső a fúrásból:', 'kupak és *paraffin* le']],
+  [B(10.6), B(13.5), 'Kinyomás', ['A minta a *behatolás irányában*', 'hagyja el a csövet']],
+  [B(13.6), B(17.5), 'Faragás', ['Ø *50 mm*, magasság *2 × átmérő*,', 'a végek merőlegesek']],
+  [B(17.6), B(20), 'Adatok', ['Méret, tömeg, *víztartalom*']],
+  [B(20.1), B(21.4), 'Talp', ['*Telített* szűrőkő, papír']],
+  [B(21.3), B(22.75), 'A minta', ['Két kézzel, *óvatosan* a talpra']],
+  [B(22.8), B(24), 'Fejlemez', ['Papír, *szűrőkő*, fejlemez']],
+  [B(24.1), B(26.4), 'Gumimembrán', ['A feszítőben *vákuum* tartja,', 'majd ráengedjük a mintára']],
+  [B(26.5), B(28.25), 'O-gyűrűk', ['Két-két gyűrű alul és felül:', 'a cellavíz *nem jut* be']],
+  [B(28.3), B(30), 'Felső drén', ['A fejlemez csöve', 'a talplemez *furatába*']],
+  [B(30.1), B(32.9), 'A cella', ['*Akrilhenger*, majd a húzórudak', 'anyáit meghúzzuk']],
+  [B(33), B(36), 'Feltöltés', ['*Légtelenített* víz alulról;', 'ha a légtelenítőn víz jön: *elzárjuk*']],
+  [B(36.1), B(38), 'Felfekvés', ['A rúd *felfekszik* az erőmérőre']],
+  [B(38.1), B(41), 'Bekötés', ['Cellanyomás, ellennyomás,', '*pórusvíznyomás*-mérő']],
+  [B(41.1), B(44), 'Vezérlés', ['Erő, elmozdulás, nyomás:', 'a számítógép *szabályoz és mér*']],
   [B(48, 0.3), B(51), 'UU · cellanyomás', ['A cellavíz *minden oldalról* nyomja,', 'a szelepek *zárva*'], { kc: COL.UU, hc: COL.UU }],
   [B(51, 0.3), B(55), 'UU · nyírás', ['A tárcsa emeli a cellát:', 'a minta *rövidül*, kb. *1 %/perc*'], { kc: COL.UU, hc: COL.UU }],
   [B(55, 0.3), B(58), 'UU · törés', ['Törés: *q_{max}*, vagy ha nincs csúcs,', 'a *15 %*-os alakváltozásnál'], { kc: COL.UU, hc: COL.UU }],
@@ -55,30 +60,22 @@ export function drawOverlay(O, t, ctx) {
   }
   O.titleCard(t - B(4), win(t, B(4), B(8), 0.05, 0.5), { kicker: 'Talajmechanikai laborok', title: 'Triaxiális\nvizsgálat', sub: 'A mintától a nyírószilárdságig' });
   // ---- fejezet-chipek
-  const CHP = [[8, 22, '1  Mintavétel', C.accent], [22, 36, '2  Próbatest', C.accent], [36, 44, '3  A készülék', C.accent], [48, 66, 'UU  nem konszolidált, drénezetlen', COL.UU],
+  const CHP = [[8, 20, '1  Próbatest', C.accent], [20, 36, '2  Beépítés', C.accent], [36, 44, '3  A készülék', C.accent], [48, 66, 'UU  nem konszolidált, drénezetlen', COL.UU],
     [66, 92, 'CU  konszolidált, drénezetlen', COL.CU], [92, 112, 'CD  konszolidált, drénezett', COL.CD], [112, 122, 'Melyiket mikor?', C.accent]];
   for (const [b0, b1, n, c] of CHP) chip(O, n, win(t, B(b0), B(b1), 0.25, 0.25), c);
-  // ---- 1. mintavétel
-  if (t > B(8.5) && t < B(11)) L3(O, proj, [0, 0.8, 0], 'ÜREGES CSŐSPIRÁL', win(t, B(8.8), B(11), 0.3, 0.3), { dx: 140, dy: -120 });
-  if (t > B(12.5) && t < B(15)) { const sp = TL.sampler(t); L3(O, proj, [0.038, sp.y + 0.55, 0], 'VÉKONYFALÚ CSŐ', win(t, B(12.8), B(15), 0.3, 0.3), { dx: 170, dy: -90, sub: 'Ø 76 mm · felületi arány ≤ 15 %' });
-    L3(O, proj, [-0.25, -DS - 0.15, 0], 'AGYAG', win(t, B(13.3), B(15), 0.3, 0.3), { dx: -160, dy: -60, color: '#c9a77e' }); }
-  if (t > B(18) && t < B(22)) { L3(O, proj, [-1.6, 0.78, 1.97], 'CÍMKE, ▲ TETEJE', win(t, B(19.6), B(22), 0.3, 0.3), { dx: 160, dy: -150 }); }
-  // ---- 2. próbatest
-  if (t > B(22) && t < B(25.2)) L3(O, proj, W3(EXT.x - 0.5, BT + 0.14, EXT.z), 'HIDRAULIKUS KITOLÓ', win(t, B(22.6), B(25.2), 0.3, 0.3), { dx: -60, dy: -170 });
-  if (t > B(25.3) && t < B(29)) { L3(O, proj, W3(LAT.x - 0.02, BT + 0.31, LAT.z - 0.13), 'TALAJESZTERGA', win(t, B(25.8), B(29), 0.3, 0.3), { dx: -200, dy: -60 });
-    L3(O, proj, W3(LAT.x + 0.03, BT + 0.06, LAT.z + 0.02), 'Ø 50 mm', win(t, B(27), B(29), 0.3, 0.3), { dx: 170, dy: 90, color: C.white }); }
-  if (t > B(29) && t < B(32)) { L3(O, proj, W3(SCL.x - 0.05, BT + 0.05, SCL.z + 0.12), 'm = 382,9 g', win(t, B(29.8), B(32), 0.3, 0.3), { dx: -240, dy: -150, color: C.white });
-    L3(O, proj, W3(SCL.x, BT + 0.17, SCL.z - 0.01), '50 × 100 mm', win(t, B(29.3), B(32), 0.3, 0.3), { dx: -180, dy: -80, color: C.white });
-    L3(O, proj, W3(SCL.x + 0.275, BT + 0.025, SCL.z + 0.05), 'w = 28,4 %', win(t, B(30.3), B(32), 0.3, 0.3), { dx: 120, dy: -140 }); }
-  if (t > B(32) && t < B(33.6)) { const cx = FRX, y0 = BT + 0.224 + 0.03; const a = (b) => win(t, B(b), B(33.6), 0.25, 0.25);
-    L3(O, proj, W3(cx + 0.025, y0 + 0.003, FRZ), 'SZŰRŐKŐ', a(32.1), { dx: 170, dy: 40 });
-    L3(O, proj, W3(cx + 0.026, y0 + 0.123, FRZ), 'FEJLEMEZ', a(32.15), { dx: 170, dy: -70 }); }
-  if (t > B(33.5) && t < B(36)) L3(O, proj, W3(FRX - 0.033, BT + 0.47, FRZ), 'MEMBRÁNFESZÍTŐ', win(t, B(33.8), B(36), 0.3, 0.3), { dx: -190, dy: -90 });
-  if (t > B(38) && t < B(40)) { L3(O, proj, W3(FRX + 0.074, BT + 0.38, FRZ), 'AKRILCELLA', win(t, B(38.2), B(40), 0.3, 0.3), { dx: 170, dy: -60 }); }
-  if (t > B(40) && t < B(44)) { const a = (b) => win(t, B(b), B(44), 0.3, 0.3);
-    L3(O, proj, W3(FRX, BT + 0.83, FRZ), 'ERŐMÉRŐ', a(40.5), { dx: -150, dy: -80 });
-    L3(O, proj, W3(1.45, BT + 0.14, -1.32), 'CELLANYOMÁS', a(41.2), { dx: -40, dy: -170 });
-    L3(O, proj, W3(1.45, BT + 0.14, -1.08), 'ELLENNYOMÁS', a(41.8), { dx: 60, dy: 120 });
+  // ---- 1. próbatest
+  if (t > B(10.5) && t < B(13.5)) L3(O, proj, W3(EXT.x - 0.5, BT + 0.14, EXT.z), 'HIDRAULIKUS KITOLÓ', win(t, B(11), B(13.5), 0.3, 0.3), { dx: -60, dy: -170 });
+  if (t > B(13.5) && t < B(17.5)) { L3(O, proj, W3(LAT.x - 0.02, BT + 0.31, LAT.z - 0.13), 'TALAJESZTERGA', win(t, B(14), B(17.5), 0.3, 0.3), { dx: -200, dy: -60 });
+    L3(O, proj, W3(LAT.x + 0.03, BT + 0.06, LAT.z + 0.02), 'Ø 50 mm', win(t, B(15.3), B(17.5), 0.3, 0.3), { dx: 170, dy: 90, color: C.white }); }
+  if (t > B(17.5) && t < B(20)) { L3(O, proj, W3(SCL.x - 0.05, BT + 0.05, SCL.z + 0.12), 'm = 382,9 g', win(t, B(18.2), B(20), 0.3, 0.3), { dx: -240, dy: -150, color: C.white });
+    L3(O, proj, W3(SCL.x + 0.275, BT + 0.025, SCL.z + 0.05), 'w = 28,4 %', win(t, B(18.9), B(20), 0.3, 0.3), { dx: 120, dy: -140 }); }
+  // ---- 2. beépítés
+  const tx = (x, y, z) => W3(FRX + x, BT + y, FRZ + z);
+  if (t > B(30) && t < B(32.9)) L3(O, proj, tx(0.074, 0.38, 0), 'AKRILCELLA', win(t, B(30.6), B(32.9), 0.3, 0.3), { dx: 170, dy: -60 });
+  if (t > B(36) && t < B(38)) { L3(O, proj, W3(FRX, BT + 0.83, FRZ), 'ERŐMÉRŐ', win(t, B(36.4), B(38), 0.3, 0.3), { dx: -150, dy: -80 }); }
+  if (t > B(38) && t < B(44)) { const a = (b) => win(t, B(b), B(44), 0.3, 0.3);
+    L3(O, proj, W3(1.45, BT + 0.14, -1.32), 'CELLANYOMÁS', a(38.6), { dx: -40, dy: -170 });
+    L3(O, proj, W3(1.45, BT + 0.14, -1.08), 'ELLENNYOMÁS', a(39.2), { dx: 60, dy: 120 });
   }
   // ---- betűk
   if (t > B(44) && t < B(48.2)) { O.fade(0.35 * win(t, B(44), B(48), 0.3, 0.3)); namesCard(O, 560, 250, 800, win(t, B(44), B(48), 0.3, 0.3), t, B(44.5), BEAT); }
@@ -99,7 +96,9 @@ export function drawOverlay(O, t, ctx) {
     xyChart(O, 1080, 270, 790, 460, a, { xmax: 16, ymax: 140, xticks: [0, 5, 10, 15], yticks: [0, 50, 100], xlabel: '', ylabel: '', title: null }, [{ pts: fq.UU[1], upto: clamp(e / 15), color: COL.UU, width: 4 }],
       [{ x: TL.EF.UU, y: TL.qUU(TL.EF.UU, UU[1].qf), text: 'q_{max}', color: C.white, a: win(t, B(55, 1), B(58), 0.3, 0.3), hline: true }]);
     axisLab(O, 1080, 270, 790, 460, a, 'ε_a [%]', 'q [kPa]'); }
-  if (t > B(55) && t < B(58)) L3(O, proj, W3(FRX - 0.03, CYW, FRZ), 'HORDÓSODÁS', win(t, B(55.6), B(58), 0.25, 0.3), { dx: -200, dy: -60, color: COL.UU });
+  if (t > B(55) && t < B(58)) L3(O, proj, W3(FRX - 0.03, CYW, FRZ), 'HORDÓSODÁS', win(t, B(55.6), B(58), 0.25, 0.3), { dx: 150, dy: -250, color: COL.UU });
+  if (t > B(82.5) && t < B(84.2)) L3(O, proj, W3(FRX - 0.02, CYW + 0.01, FRZ + 0.02), 'NYÍRÁSI SÍK', win(t, B(83.1), B(84.1), 0.2, 0.2), { dx: 160, dy: -250, color: COL.CU });
+  if (t > B(102) && t < B(104)) L3(O, proj, W3(FRX - 0.03, CYW, FRZ), 'HORDÓSODÁS', win(t, B(102.4), B(104), 0.25, 0.3), { dx: 150, dy: -250, color: COL.CD });
   if (t > B(58) && t < B(66.2)) { const a = win(t, B(58), B(66), 0.35, 0.35), k = (b) => smooth(seg(t, B(b), B(b + 0.8)));
     const cs = UU.map((s, i) => ({ s3: s.s3, s1: s.s3 + s.qf, color: COL.UU, k: k(58.4 + i * 0.9), label: 'σ_3 = ' + s.s3, lk: k(58.8 + i * 0.9), dots: true }));
     const mx = t < B(62) ? 1080 : 1080; mohr(O, mx, 250, 790, 470, a, { smax: 460, tmax: 200, sstep: 100, xl: 'σ [kPa]' }, cs, [{ tau: SOIL.cu, color: C.white, k: k(60.9), label: 'c_u ≈ 55 kPa · φ_u = 0', lk: k(61.3), ls: 30, ldx: 0, size: 28 }]);
@@ -149,7 +148,7 @@ export function drawOverlay(O, t, ctx) {
   if (t > B(122) && t < B(126.2)) O.list(120, 200, 860, ['UU: c_u, gyors', 'CU: c′, φ′ + Δu mérés', 'CD: c′, φ′, lassú', 'Legalább 3 próbatest'], [B(122, 1), B(122, 3), B(123, 1), B(123, 3)], t, win(t, B(122), B(126), 0.2, 0.4), { title: 'Összegzés', color: C.accent, mark: '›', size: 34 });
   if (t > B(126)) { const a = win(t, B(126), TOTAL + 1, 0.05, 0.1);
     O.fade(0.45 * a, '#000'); O.slam('TRIAXIÁLIS', t - B(126), a, { y: 450, size: 170, sub: 'egy minta, három út' });
-    O.bigLine('Következik: közvetlen nyíróvizsgálat', t - B(127), win(t, B(127), TOTAL + 1, 0.4, 0.1), 700, 44, C.dim);
+    O.bigLine('Talajmechanikai laborok · 9 / 9', t - B(127), win(t, B(127), TOTAL + 1, 0.4, 0.1), 700, 44, C.dim);
     O.fade(smooth(seg(t, TOTAL - 1.2, TOTAL)), '#000'); }
   runCaptions(O, t, CAPS);
   if (Math.abs(t - B(4)) < 0.2 && t >= B(4)) O.flash((1 - (t - B(4)) / 0.2) * 0.7);

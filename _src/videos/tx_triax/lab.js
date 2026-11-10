@@ -49,7 +49,7 @@ function buildSpecimen(parent) {
   // a nyírási sík és a palást metszésvonala
   const band = new THREE.Group(); parent.add(band); const bandM = [new THREE.MeshBasicMaterial({ color: 0x120c07, transparent: true, opacity: 0, depthWrite: false }), new THREE.MeshBasicMaterial({ color: 0xd9c4ff, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending })];
   const bandT = []; { const tr = Math.tan(Math.PI / 3); for (const s of [1, -1]) { const pts = []; for (let i = 0; i <= 64; i++) { const a = Math.PI / 2 + s * Math.PI * i / 64; pts.push(V(Math.cos(a), tr * Math.cos(a), Math.sin(a))); }
-      const crv = new THREE.CatmullRomCurve3(pts); const c1 = new THREE.Mesh(new THREE.TubeGeometry(crv, 128, 0.035, 6), bandM[0]); c1.renderOrder = 12; const c2 = new THREE.Mesh(new THREE.TubeGeometry(crv, 128, 0.07, 6), bandM[1]); c2.renderOrder = 13; band.add(c1, c2); bandT.push(c1, c2); } }
+      const crv = new THREE.CatmullRomCurve3(pts); const c1 = new THREE.Mesh(new THREE.TubeGeometry(crv, 128, 0.06, 6), bandM[0]); c1.renderOrder = 12; const c2 = new THREE.Mesh(new THREE.TubeGeometry(crv, 128, 0.11, 6), bandM[1]); c2.renderOrder = 13; band.add(c1, c2); bandT.push(c1, c2); } }
   const O = { soil, mem, mat, memM, band, bandM, bandT, texP, texD, base, last: '' };
   // p: { y0, H, R, ea (teljes tengelyirányú alakváltozás, arány), ep (a nyírási sík megjelenése), shearOn, ev (térfogat-arány), flash, glow, drains, memb, vis, vconst }
   O.set = (p) => {
@@ -57,7 +57,7 @@ function buildSpecimen(parent) {
     mat.map = p.drains ? texD : texP; mat.emissiveIntensity = p.glow || 0; mem.visible = !!p.memb && p.vis !== false; soil.visible = p.vis !== false;
     if (key === O.last) return O.top; O.last = key;
     const ec = (p.ev || 0) / 3, Hc = p.H * (1 - ec), Rc = p.R * (1 - ec), ea = p.ea || 0, ep = p.shearOn ? Math.min(ea, p.ep ?? 1) : ea;
-    const hp = Hc * (1 - ep), bul = 0.6 * ep, TH = Math.PI / 3, cT = Math.cos(TH), sT = Math.sin(TH);
+    const hp = Hc * (1 - ep), bul = 1.3 * ep, TH = Math.PI / 3, cT = Math.cos(TH), sT = Math.sin(TH);
     const sl = p.shearOn ? Math.max(0, ea - ep) * Hc / sT : 0, yc = hp / 2, bw = 0.0011;
     const pos = soil.geometry.attributes.position, mp = mem.geometry.attributes.position;
     // keresztmetszet: drénezetlenül állandó térfogat (A = A_0/(1 − ε_a)), drénezetten kisebb tágulás; hordósodás a közepén
@@ -67,7 +67,7 @@ function buildSpecimen(parent) {
       let x = ax * rr, y = u * hp; const z = az * rr, sd = (y - yc) * cT - x * sT, wv = sl > 0 ? ss(-bw, bw, sd) : 0; x -= sl * cT * wv; y -= sl * sT * wv;
       pos.setXYZ(i, x, p.y0 + y, z); mp.setXYZ(i, x + ax * 0.0007 * k, p.y0 + y, z + az * 0.0007 * k); }
     pos.needsUpdate = mp.needsUpdate = true; soil.geometry.computeVertexNormals(); mem.geometry.computeVertexNormals();
-    const sk = Math.min(1, sl * 400), fl = p.flash || 0; bandM[0].opacity = 0.85 * sk; bandM[1].opacity = 0.55 * fl * sk;
+    const sk = Math.min(1, sl * 400), fl = p.flash || 0; bandM[0].opacity = 0.95 * sk; bandM[1].opacity = 0.55 * fl * sk;
     const rb = rA * (1 + bul * 0.5 * 1.2) + 0.0006; band.scale.set(rb, rb, rb); band.position.set(-sl * cT / 2, p.y0 + yc - sl * sT / 2, 0); band.visible = sl > 0;
     O.top = { y: p.y0 + Hc * (1 - ea), dx: -sl * cT, Hc, Rc, rA, bul };
     return O.top;
@@ -144,6 +144,8 @@ export function buildLab(R) {
       hp.rotation.z = Math.PI / 2; hp.position.set(0.88, yc, 0); E.add(hp); for (const x of [0.6, 1.16]) bx(x - 0.03, x + 0.03, 0, yc - 0.04, -0.045, 0.045, M(0x30589a, { metalness: 0.4, roughness: 0.45 }), E); }
     // a minta (agyaghenger)
     L.ext.core = cyl(0.0362, 0.0362, 0.74, SOILM(soilTex(false)), 0, yc, 0, 32); L.ext.core.rotation.z = Math.PI / 2; E.add(L.ext.core);
+    // a cső végén műanyag kupak, alatta paraffinréteg (a laborban lekerül)
+    { const cp = new THREE.Group(); E.add(cp); L.ext.cap = cp; const c = cyl(0.042, 0.042, 0.03, M(0xd9452f, { roughness: 0.55 }), 0, 0, 0, 32); c.rotation.z = Math.PI / 2; cp.add(c); const w = cyl(0.036, 0.036, 0.012, M(0xe8dca8, { roughness: 0.7 }), -0.018, 0, 0, 32); w.rotation.z = Math.PI / 2; cp.add(w); }
     // pumpakar: csukló a pumpa tetején, a kar a laboráns felé (+z) emelkedik, a végén keresztmarkolat
     // elektrohidraulikus hajtás: tápegység a munkahenger mögött, kézi kezelődoboz (zöld: előre, piros: vissza) az asztal elején
     bx(-0.62, -0.42, 0.0, 0.14, -0.2, -0.08, M(0x30589a, { metalness: 0.4, roughness: 0.45 }), E);
@@ -188,6 +190,14 @@ export function buildLab(R) {
   TX.add(cyl(0.011, 0.011, 0.012, st, 0, LCB + 0.006, 0, 14));
   { const pts = [V(0.032, LCB + 0.05, 0), V(0.12, LCB + 0.05, 0.02), V(0.25, LCB - 0.2, 0.08), V(0.3, 0.2, 0.12), V(0.33, 0.0, 0.16)]; TX.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 40, 0.0025, 6), M(0x111214))); }
   const PL = new THREE.Group(); TX.add(PL); X.PL = PL;
+  // a motoros alapegység emelőorsója a tárcsa alatt (a tárcsa sosem lóg a levegőben)
+  X.jack = cyl(0.03, 0.03, 1, st, 0, 0, 0, 24); TX.add(X.jack); X.jackB = cyl(0.045, 0.045, 0.01, al, 0, 0.167, 0, 32); TX.add(X.jackB);
+  // tálca a keret mellett: alsó szűrőkő + papír, a minta, felső papír + kő + fejlemez
+  { const T = new THREE.Group(); TX.add(T); X.tray = T; T.position.set(0.33, 0, 0.05); bx(-0.09, 0.09, 0, 0.008, -0.07, 0.07, M(0xb9bec4, { metalness: 0.6, roughness: 0.35 }), T);
+    for (const [x0, x1, z0, z1] of [[-0.09, 0.09, -0.07, -0.064], [-0.09, 0.09, 0.064, 0.07], [-0.09, -0.084, -0.07, 0.07], [0.084, 0.09, -0.07, 0.07]]) bx(x0, x1, 0.008, 0.016, z0, z1, M(0xb9bec4, { metalness: 0.6, roughness: 0.35 }), T);
+    X.cStone = new THREE.Group(); TX.add(X.cStone); X.cStone.add(cyl(R0, R0, STN, stone, 0, STN / 2, 0, 40)); X.cStone.add(cyl(R0, R0, 0.0006, M(0xf2efe6, { roughness: 0.9 }), 0, STN + 0.0003, 0, 40));
+    X.cSpec = cyl(R0, R0, H0, SOILM(soilTex(false)), 0, 0, 0, 48); TX.add(X.cSpec);
+    X.cTop = new THREE.Group(); TX.add(X.cTop); X.cTop.add(cyl(R0, R0, 0.0006, M(0xf2efe6, { roughness: 0.9 }), 0, 0.0003, 0, 40)); X.cTop.add(cyl(R0, R0, STN, stone, 0, 0.0006 + STN / 2, 0, 40)); X.cTop.add(cyl(R0 + 0.001, R0 + 0.001, CAPH, M(0xd6dde2, { metalness: 0.5, roughness: 0.3 }), 0, 0.0006 + STN + CAPH / 2, 0, 40)); }
   PL.add(cyl(0.02, 0.02, 0.02, st, 0, 0.172, 0, 16)); PL.add(cyl(0.067, 0.067, 0.012, st, 0, 0.188, 0, 40));
   PL.add(cyl(0.1, 0.1, 0.03, al, 0, CB + 0.015, 0, 48));                                                   // talplemez
   // szelepek: 0 cellanyomás (hátul), 1 ellennyomás / felső drén (jobbra), 2 alsó drén (balra); pórusvíznyomás-mérő elöl-balra
@@ -214,11 +224,12 @@ export function buildLab(R) {
   // az akrilhenger-egység (fedőlap, húzórudak, persely) – a cella elhelyezésekor a laboráns tartja
   const CYL = new THREE.Group(); PL.add(CYL); X.CYL = CYL;
   const acr = new THREE.MeshStandardMaterial({ color: 0xa9bcc6, transparent: true, opacity: 0.09, roughness: 0.18, metalness: 0.0, side: THREE.DoubleSide, depthWrite: false });
-  { const o = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.075, CYH, 64, 1, true), acr); o.position.y = CY0 + CYH / 2; o.renderOrder = 12; CYL.add(o); const i = new THREE.Mesh(new THREE.CylinderGeometry(0.0655, 0.0655, CYH, 64, 1, true), acr); i.position.y = CY0 + CYH / 2; i.renderOrder = 12; CYL.add(i);
-    for (const y of [CY0 + 0.004, CY0 + CYH - 0.004]) { const rg = new THREE.Mesh(new THREE.RingGeometry(0.0655, 0.075, 64).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x9fb4c0, transparent: true, opacity: 0.3, side: THREE.DoubleSide, depthWrite: false })); rg.position.y = y; CYL.add(rg); } }
+  X.walls = []; { const o = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.075, CYH, 64, 1, true), acr); o.position.y = CY0 + CYH / 2; o.renderOrder = 12; CYL.add(o); const i = new THREE.Mesh(new THREE.CylinderGeometry(0.0655, 0.0655, CYH, 64, 1, true), acr); i.position.y = CY0 + CYH / 2; i.renderOrder = 12; CYL.add(i); X.walls.push(o, i);
+    for (const y of [CY0 + 0.004, CY0 + CYH - 0.004]) { const rg = new THREE.Mesh(new THREE.RingGeometry(0.0655, 0.075, 64).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x9fb4c0, transparent: true, opacity: 0.3, side: THREE.DoubleSide, depthWrite: false })); rg.position.y = y; CYL.add(rg); X.walls.push(rg); } }
   const topY = CY0 + CYH; X.topY = topY;
   CYL.add(cyl(0.1, 0.1, 0.025, al, 0, topY + 0.0125, 0, 48)); CYL.add(cyl(0.022, 0.022, 0.028, st, 0, topY + 0.039, 0, 24));
-  CYL.add(cyl(0.006, 0.006, 0.012, st, 0.06, topY + 0.031, 0.02, 10)); CYL.add(cyl(0.009, 0.009, 0.004, al, 0.06, topY + 0.039, 0.02, 12));    // légtelenítő csavar
+  { const vg = new THREE.Group(); vg.position.set(0.06, topY + 0.025, 0.02); CYL.add(vg); X.vent = vg; vg.add(cyl(0.006, 0.006, 0.012, st, 0, 0.006, 0, 10)); vg.add(cyl(0.009, 0.009, 0.005, M(0xd23a2a, { roughness: 0.5 }), 0, 0.0145, 0, 12));   // légtelenítő csavar (piros gomb)
+    X.drip = new THREE.Mesh(new THREE.SphereGeometry(0.0035, 10, 8), new THREE.MeshStandardMaterial({ color: 0x8fd0f0, transparent: true, opacity: 0.8, roughness: 0.05 })); CYL.add(X.drip); }
   for (let k = 0; k < 3; k++) { const a = Math.PI / 6 + k * 2 * Math.PI / 3, x = 0.087 * Math.cos(a), z = 0.087 * Math.sin(a); CYL.add(cyl(0.006, 0.006, CYH + 0.075, st, x, CB + (CYH + 0.075) / 2, z, 12)); CYL.add(cyl(0.012, 0.012, 0.016, M(0x23262b, { roughness: 0.6 }), x, topY + 0.033, z, 10)); }
   X.water = new THREE.Mesh(new THREE.CylinderGeometry(0.0652, 0.0652, 1, 48, 1, false), new THREE.MeshStandardMaterial({ color: 0x3f7896, transparent: true, opacity: 0.12, roughness: 0.05, depthWrite: false })); X.water.renderOrder = 11; PL.add(X.water);
   // terhelőrúd (a fejlemezen áll, a perselyben fut); elmozdulásmérő a rúd konzolján, csúcsa a fedőlapon
@@ -281,49 +292,63 @@ export function updateLab(L, t, shot, R) {
   const on = !!shot.lab; L.G.visible = on; if (!on) return null;
   const X = L.tx, C = cellState(t);
   // vizsgálati állapot → mozgások
-  const mounted = t < tb(8) || t >= tb(32);                                   // a cella talpán ül a minta
-  const cellDown = t < tb(8) || t >= tb(37, 3); const cK = t < tb(8) ? 1 : TL.cellK(t); const lift = 0.18 * (1 - cK);
-  const cellVis = t < tb(8) || t >= tb(36);
-  const app = t < tb(8) ? 1 : smooth(seg(t, tb(40, 2), tb(41, 2)));          // gyors közelítés: a rúd felfekszik az erőmérőre
+  const mounted = t < tb(8) || t >= TL.MOUNT.spec;                           // a cella talpán ül a minta
+  const cellDown = t < tb(8) || t >= tb(31, 3); const cK = t < tb(8) ? 1 : TL.cellK(t); const lift = 0.18 * (1 - cK);
+  const cellVis = t < tb(8) || t >= tb(30);
+  const app = t < tb(8) ? 1 : TL.appK(t);                                      // gyors közelítés: a rúd felfekszik az erőmérőre
   const ea = (C.ea || 0) / 100, ev = (C.ev || 0) / 100;
   const ec = ev / 3, d = ea * H0 * (1 - ec), dc = H0 * ec + STN * 0;          // nyírás + konszolidációs rövidülés
   X.PL.position.y = APP * app + d + dc * app;
   // minta
-  const ep = C.ph === 'CU' ? TL.EF.CU / 100 : C.ph === 'open' ? 0.06 : 1;
+  const ep = C.ph === 'CU' ? 0.07 : C.ph === 'open' ? 0.06 : 1;              // CU: a nyírási sík 7 %-nál jelenik meg, utána azon csúszik
   const flash = C.shearMode && C.fail > 0 ? Math.exp(-Math.max(0, t - (C.ph === 'open' ? tb(2) : tb(83, 2))) * 2.5) : 0;
-  const glow = t >= tb(48) ? clamp(((C.u || 0) - (C.uB || 0)) / 260, 0, 1) * 0.32 : 0;
-  const memb = mounted && (t < tb(8) || t >= TL.MOUNT.oring);
+  const glow = t >= tb(48) && !shot.cut ? clamp(((C.u || 0) - (C.uB || 0)) / 260, 0, 1) * 0.32 : 0;
+  const memb = mounted && (t < tb(8) || t >= tb(25, 3));
   const top = X.spec.set({ y0: SPB, H: H0, R: R0, ea, ep, shearOn: !!C.shearMode, ev, flash, glow, drains: C.drains, memb, vis: mounted, vconst: C.ph === 'CD' ? 0.35 : 1 });
   // a csúcs után a felső tömb elcsúszik: a csúcsig hordósodás, utána a teljes további rövidülés a síkon
-  X.top.visible = mounted; X.top.position.set(top.dx, top.y, 0);
-  X.stoneB.visible = X.paperB.visible = mounted;
-  X.oringB.forEach((o, i) => { o.visible = memb; o.position.y = CY0 + 0.009 + i * 0.011; });
-  X.oringT.forEach((o, i) => { o.visible = memb; o.position.set(top.dx, top.y + 0.0006 + STN + 0.006 + i * 0.009, 0); });
+  const topOn = t < tb(8) || t >= tb(23, 3); X.top.visible = mounted && topOn; X.top.position.set(top.dx, top.y, 0);
+  X.stoneB.visible = X.paperB.visible = t < tb(8) || t >= tb(21);
+  const rOn = (k) => t < tb(8) || t >= TL.MOUNT.oring + BEAT * (0.7 + k * 0.75);   // a gyűrűk egyenként gördülnek le a feszítőről
+  X.oringB.forEach((o, i) => { o.visible = memb && rOn(i); o.position.y = CY0 + 0.009 + i * 0.011; });
+  X.oringT.forEach((o, i) => { o.visible = memb && rOn(2 + i); o.position.set(top.dx, top.y + 0.0006 + STN + 0.006 + i * 0.009, 0); });
+  // tálca és a kézben vitt elemek (kőlap, minta, fejrész): felemel – átvisz – leenged
+  { const P0 = (x, y, z) => V(x, y, z), path = (a, b, k, hgt) => { const u = smooth(clamp(k / 0.3)), w = smooth(clamp((k - 0.25) / 0.5)), d = smooth(clamp((k - 0.7) / 0.3)); return V(lerp(a.x, b.x, w), a.y + hgt * u - (a.y + hgt - b.y) * d, lerp(a.z, b.z, w)); };
+    const tr = X.tray.position, trayOn = t >= tb(8) && t < tb(30); X.tray.visible = trayOn || (t >= tb(8) && t < tb(36));
+    const sA = P0(tr.x - 0.05, 0.008, tr.z + 0.03), sB = P0(0, CY0 + PED, 0), sk = TL.stoneK(t);
+    X.cStone.visible = t >= tb(8) && t < tb(21); X.cStone.position.copy(path(sA, sB, sk, 0.16));
+    const pA = P0(tr.x, 0.008 + H0 / 2, tr.z - 0.03), pB = P0(0, SPB + H0 / 2, 0), pk = TL.specK(t);
+    X.cSpec.visible = t >= tb(8) && t < TL.MOUNT.spec; X.cSpec.position.copy(path(pA, pB, pk, 0.15));
+    const cA = P0(tr.x + 0.05, 0.008, tr.z + 0.03), cB = P0(0, SPB + H0 + 0.0006 - 0.0006, 0), ck = TL.topK(t);
+    X.cTop.visible = t >= tb(8) && t < tb(23, 3); X.cTop.position.copy(path(cA, cB, ck, 0.17)); X.carry = { sk, pk, ck }; }
   X.memB.visible = memb; X.memB.position.y = CY0 + 0.017; X.memT.visible = memb; X.memT.position.set(top.dx, top.y + 0.012, 0);
   // felső drénvezeték: a fejlemeztől a talplemez furatáig (a membrán mellett)
-  if (mounted && X.top.visible) { const p0 = V(top.dx - 0.016, top.y + 0.0006 + STN + CAPH + 0.009, 0), key = p0.y.toFixed(4) + p0.x.toFixed(4);
+  if (mounted && X.top.visible && (t < tb(8) || TL.drainK(t) > 0.5)) { const p0 = V(top.dx - 0.016, top.y + 0.0006 + STN + CAPH + 0.009, 0), key = p0.y.toFixed(4) + p0.x.toFixed(4);
     if (key !== X.drainKey) { X.drainKey = key; X.drainT.geometry.dispose(); X.drainT.geometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3([p0, p0.clone().add(V(-0.01, 0.012, -0.012)), V(-0.046, top.y - 0.02, -0.03), V(-0.05, CY0 + 0.05, -0.034), V(-0.05, CY0 + 0.002, -0.034)]), 40, 0.0016, 6); }
     X.drainT.visible = true; } else X.drainT.visible = false;
   // akrilhenger + fedőlap (a laboráns tartja, majd leereszti)
-  X.CYL.visible = cellVis; X.CYL.position.y = lift;
-  const wl = t < tb(8) ? 1 : (t >= tb(38) ? TL.fillK(t) : 0); X.water.visible = cellVis && cellDown && wl > 0.01; const wh = (CYH - 0.006) * wl; X.water.scale.y = Math.max(0.001, wh); X.water.position.y = CY0 + 0.003 + wh / 2;
+  X.CYL.visible = cellVis; X.CYL.position.y = lift; X.walls.forEach(m => { m.visible = !shot.cut; });
+  { const vk = t < tb(8) ? 1 : TL.ventK(t), open = t >= tb(32, 3) && vk < 1; X.vent.position.y = X.topY + 0.025 + (open ? 0.004 : 0); X.vent.rotation.y = vk * Math.PI * 3;
+    const fk = TL.fillK(t); X.drip.visible = open && fk > 0.97 && t < tb(35, 2); const dp = ((t - tb(34, 3)) / (BEAT * 0.5)) % 1; X.drip.position.set(0.06 + 0.012, X.topY + 0.035 - 0.03 * dp, 0.02); }
+  // a tárcsa alatti emelőorsó: az alapegységből a tárcsáig
+  X.jack.visible = X.PL.position.y > 0.002; if (X.jack.visible) setRod(X.jack, V(0, 0.16, 0), V(0, 0.165 + X.PL.position.y, 0));
+  const wl = t < tb(8) ? 1 : (t >= tb(33) ? TL.fillK(t) : 0); X.water.visible = cellVis && cellDown && wl > 0.01 && !shot.cut; const wh = (CYH - 0.006) * wl; X.water.scale.y = Math.max(0.001, wh); X.water.position.y = CY0 + 0.003 + wh / 2;
   // terhelőrúd: a fejlemezen áll (a perselyben fut); felfekvés után a teteje az erőmérőn
   { const capTopW = X.PL.position.y + top.y + 0.0006 + STN + CAPH, rodBot = mounted && cellVis ? (cellDown ? capTopW : X.PL.position.y + lift + SPB + H0 + 0.0006 + STN + CAPH + 0.005) : null;
     X.ram.visible = rodBot !== null; if (X.ram.visible) { const rt = rodBot + PLEN; setRod(X.ram, V(top.dx * (cellDown ? 1 : 0), rodBot, 0), V(0, Math.min(rt, LCB), 0)); }
     X.lvdt.visible = X.lvTip.visible = X.ram.visible && cellDown; const ly = Math.min(rodBot + PLEN, LCB) - 0.045; X.lvdt.position.set(0, ly, 0); setRod(X.lvTip, V(0.07, X.PL.position.y + X.topY + 0.025, 0), V(0.07, ly - 0.0925, 0)); }
   // szelepek
-  const vOpen = [t < tb(8) || t >= tb(38) ? 1 : 0, C.vlv, C.vlv]; X.valves.forEach((v, i) => { const o = i === 0 ? vOpen[0] : (C.ph === 'UU' || C.ph === 'open' ? 0 : vOpen[i]); v.h.rotation.y = o ? 0 : Math.PI / 2; v.ring.material.color.setHex(o ? 0x3ddc84 : 0xff4d3a); v.ring.visible = cellVis && (t < tb(8) || t >= tb(38)); });
+  const vOpen = [t < tb(8) || t >= tb(33) ? 1 : 0, C.vlv, C.vlv]; X.valves.forEach((v, i) => { const o = i === 0 ? vOpen[0] : (C.ph === 'UU' || C.ph === 'open' ? 0 : vOpen[i]); v.h.rotation.y = o ? 0 : Math.PI / 2; v.ring.material.color.setHex(o ? 0x3ddc84 : 0xff4d3a); v.ring.visible = cellVis && (t < tb(8) || t >= tb(33)); });
   // membránfeszítő: a laboráns két kézzel leereszti a minta fölé, majd a membrán és az O-gyűrűk rákerülnek
-  { const k = TL.membK(t), up = smooth(seg(t, tb(35, 2.5), tb(35, 3.8))), vis = t >= tb(33, 2) && t < tb(36);
-    X.str.visible = vis; const yC = SPB + H0 / 2; X.str.position.set(0, X.PL.position.y + lerp(yC + 0.22, yC + 0.005, k) + 0.22 * up, 0); X.strMem.visible = t < TL.MOUNT.oring;
-    X.strRings.forEach((o, i) => { o.visible = t < TL.MOUNT.oring + BEAT * (i < 2 ? 0.6 : 1.6); }); }
+  { const k = TL.membK(t), up = TL.strUpK(t), vis = t >= tb(24) && t < tb(28, 1);
+    X.str.visible = vis; const yC = SPB + H0 / 2; X.str.position.set(0, X.PL.position.y + lerp(yC + 0.22, yC + 0.005, k) + 0.22 * up, 0); X.strMem.visible = t < tb(25, 3);
+    const ro = [0, 1, 2, 3]; X.strRings.forEach((o, i) => { const k2 = [0, 1, 3, 2][i]; o.visible = t < TL.MOUNT.oring + BEAT * (0.7 + k2 * 0.75); }); }
   // csövek és áramlás
   { L.G.updateMatrixWorld(true); const vw = (i, dx = 0.03) => X.valves[i].g.localToWorld(V(dx, 0, 0)).sub(L.G.position);
-    const show = cellVis && t >= tb(36); X.tubeC.m.visible = X.tubeB.m.visible = show;
+    const show = cellVis && t >= tb(32, 3); X.tubeC.m.visible = X.tubeB.m.visible = show;
     if (show) { const pc = vw(0), pb = vw(1); const cC = L.ctlC.g.position.clone().add(V(-0.3, 0.05, 0)), cB = L.ctlB.g.position.clone().add(V(-0.3, 0.05, 0));
       X.tubeC.set([pc, pc.clone().add(V(0.0, -0.02, -0.04)), V(pc.x + 0.08, BT + 0.012, pc.z - 0.1), V(cC.x - 0.2, BT + 0.012, cC.z), cC]);
       X.tubeB.set([pb, pb.clone().add(V(0.04, -0.02, 0.0)), V(pb.x + 0.12, BT + 0.012, pb.z + 0.04), V(cB.x - 0.2, BT + 0.012, cB.z), cB]);
-      X.tubeC.flow(t, t >= tb(38) && t < tb(40) ? -1 : 0); X.tubeB.flow(t, -(C.flow || 0)); } }
+      X.tubeC.flow(t, t >= tb(33) && t < tb(35) ? -1 : 0); X.tubeB.flow(t, -(C.flow || 0)); } }
   // kijelzők
   drawCtl(L.ctlC.sc, 'CELLANYOMÁS', 'σ', 'c', C.sc || 0, 'kPa', t);
   drawCtl(L.ctlB.sc, C.ph === 'UU' || C.ph === 'open' ? 'NINCS BEKÖTVE' : 'ELLENNYOMÁS', 'u', 'B', C.ph === 'UU' || C.ph === 'open' ? null : (C.uB || 0), 'kPa', t);
@@ -331,14 +356,17 @@ export function updateLab(L, t, shot, R) {
   drawPanel(X.panel, C, t);
   // kitoló
   { const k = TL.extrudeK(t), E = L.ext; const px = lerp(-0.425, 0.455, k); E.plunger.position.x = px; setRod(E.rod, V(-0.42, E.yc, 0), V(px - 0.01, E.yc, 0));
-    const c0 = lerp(-0.4, 0.5, k); E.core.position.x = c0 + 0.37; E.core.visible = t >= tb(18) && t < tb(26);
+    const c0 = lerp(-0.4, 0.5, k); E.core.position.x = c0 + 0.37; E.core.visible = t >= tb(8) && t < tb(13, 3);
+    // a kupak: lehúzás (+x), majd az asztalra le
+    { const ck = TL.capOffK(t), a = V(0.465, E.yc, 0), b = V(0.6, 0.021, 0.17); E.cap.visible = t < tb(13, 3);
+      const u = smooth(clamp(ck / 0.45)), w = smooth(clamp((ck - 0.4) / 0.6)); E.cap.position.set(lerp(a.x + 0.09 * u, b.x, w), lerp(a.y, b.y, w) + 0.04 * Math.sin(Math.PI * w), lerp(a.z, b.z, w)); E.cap.rotation.z = (Math.PI / 2) * w; }
   }
   // eszterga
-  { const k = TL.trimK(t), Lt = L.lat, r = lerp(0.0362, R0, k), h = Lt.spH; Lt.spec.visible = t >= tb(25) && t < tb(29.5); Lt.spec.scale.set(r, h, r); Lt.spec.position.y = 0.035 + h / 2; const a = TL.latheA(t);
+  { const k = TL.trimK(t), Lt = L.lat, r = lerp(0.0362, R0, k), h = Lt.spH; Lt.spec.visible = t >= tb(13, 3) && t < tb(17, 2); Lt.spec.scale.set(r, h, r); Lt.spec.position.y = 0.035 + h / 2; const a = TL.latheA(t);
     Lt.spec.rotation.y = a; Lt.turn.rotation.y = a; Lt.top.position.y = 0.035 + h; Lt.top.rotation.y = a; Lt.chips.visible = k > 0.05; Lt.chips.scale.setScalar(0.4 + 0.6 * k);
     const ky = TL.knifeY(t); Lt.knife.position.set(Lt.gx, 0.035 + lerp(-0.005, h + 0.03, ky), Lt.gz); }
   // mérleg
-  { const m = 382.9 + (t < tb(30) ? 0 : 0); const show = t >= tb(29) && t < tb(32); L.scl.spec.visible = show; drawScale(L.scl.disp, show && t >= tb(29, 2) ? m : 0); }
+  { const m = 382.9; const show = t >= tb(17, 2) && t < tb(20); L.scl.spec.visible = show; drawScale(L.scl.disp, show && t >= tb(17, 3) ? m : 0); }
   // számítógép
   drawPC(L.pc.scr, C, t);
   // fények
@@ -354,28 +382,56 @@ function techPose(L, t, shot) {
   const at = (x, z, ry = Math.PI) => { w.position.set(x, 0, z); w.rotation.y = ry; w.updateWorldMatrix(true, false); };   // a laboráns a labor-csoport gyermeke: helyi koordináták
   const f = () => V(Math.sin(w.rotation.y), 0, Math.cos(w.rotation.y));
   L.G.updateMatrixWorld(true);
-  if (inW(22, 25.2)) { // kitoló: a bal kéz mutatóujja a kezelődoboz zöld gombján, a jobb tenyér a csövön nyugszik
+  const X = L.tx; X.PL.updateMatrixWorld(true);
+  const TXW = (p) => L.TX.localToWorld(p.clone());                      // keret-helyi → világ
+  const rest = (side, p, F = V(0, 0, -1)) => { const g = palmOn(p, V(0, 1, 0), F, side, { curl: 0.3, gap: 0.022 }); g.pole = side === 'L' ? V(0.9, -0.5, -0.3) : V(-0.9, -0.5, -0.3); return g; };
+  if (inW(8.25, 10.5)) { // kupak lehúzása: jobb kéz a kupakon, bal tenyér a csövön
+    at(EXT.x + 0.3, -0.55); const E = L.ext; E.G.updateMatrixWorld(true); const cw = E.cap.localToWorld(V(0, 0, 0));
+    const gR = gripCylinder(cw, V(1, 0, 0), 0.042, V(-0.1, -0.35, -1).normalize(), 'R', { curl: 0.6 }); gR.pole = V(-0.9, -0.5, -0.3);
+    const gL = rest('L', E.G.localToWorld(V(0.18, E.yc + 0.038, 0)), V(0.2, 0, -1).normalize());
+    reachW(w, { L: gL, R: gR }, { look: 0.45, lean: 0.12 }); return; }
+  if (inW(10.5, 13.5)) { // kitoló: a bal kéz mutatóujja a kezelődoboz zöld gombján, a jobb tenyér a csövön nyugszik
     at(EXT.x + 0.02, -0.55); const E = L.ext; E.G.updateMatrixWorld(true); const bp = E.ctl.localToWorld(V(-0.025, E.btnY, 0)), fw = E.ctl.localToWorld(V(0, E.btnY, -1)).sub(E.ctl.localToWorld(V(0, E.btnY, 0))).normalize();
     const gL = palmOn(bp.clone().addScaledVector(fw, -0.04), V(0, 1, 0), fw, 'L', { curl: 0.55, gap: 0.03 }); gL.pole = V(0.9, -0.5, -0.3);
     const gR = palmOn(W(L, EXT.x + 0.14, BT + 0.11 + 0.038, EXT.z), V(0, 1, 0), V(0.15, 0, -1).normalize(), 'R', { curl: 0.85, gap: 0.026 }); gR.pole = V(-0.9, -0.5, -0.3);
     reachW(w, { L: gL, R: gR }, { look: 0.45, lean: 0.1 }); return; }
-  if (inW(25.2, 29)) { // eszterga: bal kéz a hajtókar gombján, jobb a kés nyelén
+  if (inW(13.5, 17.5)) { // eszterga: bal kéz a hajtókar gombján, jobb a kés nyelén
     at(LAT.x + 0.02, -0.55); const Lt = L.lat; Lt.G.updateMatrixWorld(true);
     const kc = Lt.knob.getWorldPosition(V()); const gL = gripCylinder(kc, V(0, 1, 0), 0.011, V(0.3, -0.2, -1).normalize(), 'L'); gL.pole = V(0.9, -0.5, -0.2);
     const hc = Lt.knife.localToWorld(V(0, 0.12, 0.05)); const gR = gripCylinder(hc, V(0, 1, 0), 0.015, V(-0.25, 0, -1).normalize(), 'R'); gR.pole = V(-0.9, -0.5, -0.2);
     reachW(w, { L: gL, R: gR }, { look: 0.5, lean: 0.15 }); return; }
-  if (inW(33, 35.6)) { // membránfeszítő két kézzel, oldalról
-    at(FRX, -0.56); const S = L.tx.str; S.updateMatrixWorld(true); const c = S.getWorldPosition(V());
-    // a membránfeszítő csövét oldalról, tenyérrel fogja; az ujjak előre, a cső íve mentén hajlanak
+  const restL = () => rest('L', TXW(V(-0.12, 0.162, 0.13)), V(0.3, 0, -1).normalize());
+  if (inW(20, 21.2) || inW(22.8, 24)) { // kőlap / fejrész: jobb kéz fogja oldalról, bal tenyér a keret alapján
+    at(FRX + 0.12, -0.6); const obj = inW(20, 21.2) ? X.cStone : X.cTop, hy = inW(20, 21.2) ? STN / 2 : 0.0006 + STN + CAPH * 0.5, r = inW(20, 21.2) ? R0 : R0 + 0.001;
+    const c = TXW(obj.position.clone().add(V(0, hy, 0))); const gR = gripCylinder(c, V(0, 1, 0), r, V(-0.2, -0.3, -1).normalize(), 'R', { curl: 0.7, palmOff: 0.012 }); gR.pole = V(-0.9, -0.5, -0.3);
+    reachW(w, { L: restL(), R: gR }, { look: 0.5, lean: 0.14 }); return; }
+  if (inW(21.2, 22.8)) { // a minta két kézzel, két oldalról
+    at(FRX + 0.15, -0.58); const c = TXW(X.cSpec.position);
+    const gL = gripCylinder(c.clone().add(V(-R0, 0, 0)), V(0, 1, 0), 0.006, V(1, 0, 0.1).normalize(), 'L', { curl: 0.5, palmOff: 0.012 }); gL.pole = V(0.9, -0.5, -0.2);
+    const gR = gripCylinder(c.clone().add(V(R0, 0, 0)), V(0, 1, 0), 0.006, V(-1, 0, 0.1).normalize(), 'R', { curl: 0.5, palmOff: 0.012 }); gR.pole = V(-0.9, -0.5, -0.2);
+    gL.contact = c.clone().add(V(-R0, 0, 0)); gR.contact = c.clone().add(V(R0, 0, 0)); gL.axisPt = c.clone(); gR.axisPt = c.clone(); gL.radius = gR.radius = R0;
+    reachW(w, { L: gL, R: gR }, { look: 0.5, lean: 0.14 }); return; }
+  if (inW(24, 28.25)) { // membránfeszítő két kézzel, oldalról (leengedés, gyűrűk legördítése, levétel)
+    at(FRX, -0.56); const S = X.str; S.updateMatrixWorld(true); const c = S.getWorldPosition(V());
     const gL = palmOn(c.clone().add(V(-0.0335, 0, 0)), V(-1, 0, 0), V(0, 0.15, -1).normalize(), 'L', { curl: 0.45, gap: 0.021 }); gL.pole = V(0.9, -0.5, -0.1);
     const gR = palmOn(c.clone().add(V(0.0335, 0, 0)), V(1, 0, 0), V(0, 0.15, -1).normalize(), 'R', { curl: 0.45, gap: 0.021 }); gR.pole = V(-0.9, -0.5, -0.1);
     reachW(w, { L: gL, R: gR }, { look: 0.55, lean: 0.18 }); return; }
-  if (inW(36, 37.9)) { // a cella (akrilhenger) két kézzel, oldalról fogva
-    at(FRX, -0.56); const CY = L.tx.CYL; CY.updateMatrixWorld(true); const c = CY.localToWorld(V(0, CY0 + 0.15, 0));
+  if (inW(28.25, 30)) { // a felső drén csöve: jobb kéz a fejlemez csonkjánál
+    at(FRX + 0.05, -0.58); const tp = X.top.getWorldPosition(V()).add(V(-0.016, 0.0006 + STN + CAPH + 0.012, 0));
+    const gR = gripCylinder(tp, V(0, 1, 0), 0.004, V(-0.3, -0.4, -1).normalize(), 'R', { curl: 0.9, palmOff: 0.014 }); gR.pole = V(-0.9, -0.5, -0.3);
+    reachW(w, { L: restL(), R: gR }, { look: 0.6, lean: 0.18 }); return; }
+  if (inW(30, 31.75)) { // a cella (akrilhenger) két kézzel, oldalról fogva
+    at(FRX, -0.56); const CY = X.CYL; CY.updateMatrixWorld(true); const c = CY.localToWorld(V(0, CY0 + 0.15, 0));
     const gL = gripCylinder(c.clone().add(V(-0.075, 0, 0)), V(0, 1, 0), 0.006, V(1, 0, 0.15).normalize(), 'L', { curl: 0.55, palmOff: 0.014 }); gL.pole = V(0.9, -0.5, -0.1);
     const gR = gripCylinder(c.clone().add(V(0.075, 0, 0)), V(0, 1, 0), 0.006, V(-1, 0, 0.15).normalize(), 'R', { curl: 0.55, palmOff: 0.014 }); gR.pole = V(-0.9, -0.5, -0.1);
     gL.contact = c.clone().add(V(-0.075, 0, 0)); gR.contact = c.clone().add(V(0.075, 0, 0)); gL.axisPt = c.clone(); gR.axisPt = c.clone(); gL.radius = gR.radius = 0.075;
     reachW(w, { L: gL, R: gR }, { look: 0.45, lean: 0.12 }); return; }
+  if (inW(31.75, 32.9) || inW(35, 36)) { // húzórúd-anya / légtelenítő gomb: jobb kéz, bal tenyér a fedőlapon
+    at(FRX + 0.05, -0.57); const CY = X.CYL; CY.updateMatrixWorld(true); const a = Math.PI / 6;
+    const p = inW(35, 36) ? X.vent.localToWorld(V(0, 0.0145, 0)) : CY.localToWorld(V(0.087 * Math.cos(a), X.topY + 0.033, 0.087 * Math.sin(a)));
+    const gR = gripCylinder(p, V(0, 1, 0), inW(35, 36) ? 0.009 : 0.012, V(-0.2, -0.5, -1).normalize(), 'R', { curl: 0.85, palmOff: 0.012 }); gR.pole = V(-0.9, -0.5, -0.3);
+    const gL = rest('L', CY.localToWorld(V(-0.05, X.topY + 0.025, 0.04)), V(0.2, 0, -1).normalize());
+    reachW(w, { L: gL, R: gR }, { look: 0.55, lean: 0.14 }); return; }
   // alapállás: a számítógépnél (bal kéz a billentyűzeten, jobb az egéren)
   at(PC.x + 0.05, -0.55); const pc = L.pc.g; pc.updateMatrixWorld(true);
   const kL = palmOn(pc.localToWorld(V(-0.07, 0.03, 0.24)), V(0, 1, 0), V(0.2, 0, -1).normalize(), 'L', { curl: 0.35, gap: 0.03 }); kL.pole = V(0.9, -0.5, -0.3);

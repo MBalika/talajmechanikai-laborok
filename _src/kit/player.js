@@ -127,7 +127,8 @@ body{background:#000;margin:0;overflow:hidden;font-family:Inter,Arial,sans-serif
   function loop() {
     if (!exporting) {
       if (playing) {
-        if (!audio.paused && audio.readyState >= 2) { if (Math.abs(audio.currentTime - tNow) > 1.0) { try { audio.currentTime = tNow; } catch (e) {} } else tNow = audio.currentTime; }
+        // (2026-11-10) a hang a mester: egy lassú képkocka után a kép ugrik előre, a zenét soha nem tekerjük vissza (ettől „ugrott” a zene)
+        if (!audio.paused && audio.readyState >= 2) tNow = audio.currentTime;
         else {
           const now = performance.now();
           tNow += (now - lastWall) / 1e3;

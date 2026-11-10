@@ -38,6 +38,8 @@ export function startApp(V) {
     try {
       await loadFonts();
       await V.init(c3d);
+      // (2026-11-10) bemelegítés: minden snitt egyszer kirajzolva betöltéskor, hogy lejátszás közben ne akadjon a shaderfordítás miatt
+      if (V.warm && !Q.has('render')) for (const t of V.warm) { try { V.render(t); } catch (e) {} }
       window.ready = true;
       if (!Q.has('render')) setupPlayer({ renderAt, total: V.TOTAL, audioUrl: V.soundUrl, title: V.FILE, c3d, c2d });
       else renderAt(0);
