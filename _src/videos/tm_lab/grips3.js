@@ -67,6 +67,19 @@ export function rimSide(side, p, N, h, fwd, o = {}) {
   const W = wristFromPalm(fr, pc);
   return tipsGrip(side, W, fr, tips, { flex: { R: [0.75, 0.8, 0.45], P: [0.8, 0.85, 0.5] }, pole: o.pole });
 }
+// 3b) TÁRCSA KÉT OLDALRÓL, „kézfogás” helyzetben (súlytárcsa emelése, vitele): a tenyér függőleges és befelé néz, az ujjak előre mutatnak
+//     és a palást ívét követve kissé behajlanak, a hüvelyk a lap tetején; az alkar így vízszintes közeli, a könyök lent, a test mellett.
+//     p: a perem pontja (a tárcsa oldalán, a lap tetejének magasságában), N: kifelé mutató vízszintes normális, h: vastagság, R: sugár, fwd: előre (a testtől el)
+export function rimHold(side, p, N, h, R, fwd, o = {}) {
+  const Nn = horiz(N), Fw = horiz(fwd); const P = Nn.clone().negate(); const fr = frame(side, Fw.clone().add(V(0, -0.22, 0)), P);
+  const top = tv(p); const C = top.clone().addScaledVector(Nn, -R); const ym = -Math.min(h * 0.55, 0.012);
+  const onRim = (deg, dy) => { const a = deg * Math.PI / 180; const d = Nn.clone().multiplyScalar(Math.cos(a)).addScaledVector(Fw, Math.sin(a)); return C.clone().addScaledVector(d, R + FSKIN * 0.9).add(V(0, dy, 0)); };
+  const tips = { T: top.clone().addScaledVector(Nn, -(o.inset ?? 0.018)).addScaledVector(Fw, 0.035).add(V(0, FSKIN * 0.9, 0)),
+    I: onRim(42, ym * 0.6), M: onRim(34, ym), R: onRim(25, ym * 1.2) };
+  const pc = C.clone().addScaledVector(Nn, R + PALM + 0.004).addScaledVector(Fw, -0.005).add(V(0, ym - 0.004, 0));
+  const W = wristFromPalm(fr, pc);
+  return tipsGrip(side, W, fr, tips, { flex: { P: [0.55, 0.65, 0.4] }, pole: o.pole });
+}
 // 4) VÉKONY ÁLLÓ LAP FELÜLRŐL (acélvonalzó, lemez éle): a tenyér a lap felső éle fölött lefelé néz, a hüvelyk párnája a közeli,
 //    a mutató- és középső ujj párnája a túlsó oldalon. p: a lap felső élének pontja, n: a lap normálisa a közeli oldaltól a túlsó felé, t: vastagság
 export function bladeTop(side, p, n, t, o = {}) {

@@ -3,7 +3,7 @@
 // Minden mozdulatot a laboráns keze végez (tm_lab/act.js koreográfia, tm_lab/grips2.js pontos fogások).
 import { THREE, V, BT, M, cyl, bx, drawScale, drawPC } from '../tm_lab/room.js';
 import { Choreo, keyed, still, stdPoses } from '../tm_lab/act.js';
-import { diskTop, powerCyl, rimSide, bladeTop, sheetEdge, flatPalm, fingerPress, tipsGrip, wristFromPalm, frame as frame3 } from '../tm_lab/grips3.js';
+import { diskTop, powerCyl, rimSide, rimHold, bladeTop, sheetEdge, flatPalm, fingerPress, tipsGrip, wristFromPalm, frame as frame3 } from '../tm_lab/grips3.js';
 import * as O2 from '../tm_lab/oedo2.js';
 import { tb, eAt, sAt, discsOn, DISCS, STEP_T, SEQ, minAt, M_RING, M_SOIL, M_DRY } from './timeline.js';
 import { clamp, smooth, seg } from '../../kit/util.js';
@@ -76,7 +76,7 @@ export function build(L, R) {
   X.fr = O2.oedFrame(); X.fr.position.set(POS.O[0], BT, POS.O[1]); G.add(X.fr);
   X.hangPoint = (tt) => { const th2 = theta(tt); const h2 = V(FR.hang - FR.piv, -0.012, 0).applyAxisAngle(V(0, 0, 1), th2).add(X.fr.beam.position); return V(POS.O[0] + h2.x, BT + h2.y - FR.rod, POS.O[1]); };
   X.stand = O2.weightStand(); X.stand.position.set(POS.stand[0], 0, POS.stand[1]); G.add(X.stand);
-  X.discs = []; const DR = { 25: [0.075, 0.0081], 50: [0.075, 0.0162], 100: [0.08, 0.0285], 200: [0.09, 0.045], 400: [0.1, 0.073] };
+  X.discs = []; const DR = { 25: [0.075, 0.0081], 50: [0.08, 0.0143], 100: [0.085, 0.0253], 200: [0.09, 0.045], 400: [0.095, 0.081] };   // acél, a feliratos tömegből; felfelé nem nő a sugár, így a kéz nem ér az alatta lévő tárcsába
   const KG = { 25: 1.13, 50: 2.25, 100: 4.50, 200: 9.01, 400: 18.02 };
   DISCS.forEach((k, i) => { const d = O2.slotDisc(k, KG[k], DR[k][0], DR[k][1]); G.add(d); X.discs.push(d); });
   X.timer = O2.timer(); X.timer.position.set(POS.timer[0], BT, POS.timer[1]); X.timer.rotation.y = -0.3; G.add(X.timer);
@@ -202,7 +202,7 @@ function choreo(L) {
   { const pt = V(POS.timer[0] + 0.028 * Math.cos(0.3), BT + 0.028, POS.timer[1] + 0.028 * Math.sin(0.3)); C.hold('L', B(86.6), B(86.98), null, fingerPress('L', pt, aimW('L', 86.6, pt))); }
   // tárcsák: két kézzel a két oldalon – hüvelyk a lap tetején, mutató- és középső ujj a paláston, a tenyér befelé-lefelé (a tárcsa helyi rendszerében: a világ +x = helyi +z)
   X.discs.forEach((d, i) => { const r = d.r, h = d.h - 0.0024;
-    const gL = rimSide('L', V(0, h, -r), V(0, 0, -1), h, V(1, 0, 0)), gR = rimSide('R', V(0, h, r), V(0, 0, 1), h, V(1, 0, 0));
+    const gL = rimHold('L', V(0, h, -r), V(0, 0, -1), h, r, V(1, 0, 0)), gR = rimHold('R', V(0, h, r), V(0, 0, 1), h, r, V(1, 0, 0));
     for (const e of X.discEv) if (e.i === i) { C.hold('L', B(e.a + 0.02), B(e.b - 0.02), 'disc' + i, gL); C.hold('R', B(e.a + 0.02), B(e.b - 0.02), 'disc' + i, gR); } });
 }
 // ---- frissítés ----
