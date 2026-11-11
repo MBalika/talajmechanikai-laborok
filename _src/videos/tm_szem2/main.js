@@ -6,6 +6,6 @@ import { drawOverlay } from './script.js';
 import { TOTAL, tb } from './timeline.js';
 import { SHOTS } from './shots.js';
 import soundUrl from './music.mp3';
-setAccent('#B48CFF');
-const { init, render } = makeScene(APP, SHOTS, tb, { sink: { x: APP.POS.sink }, board: APP.board });
+setAccent('#F2C14E');
+const { init, render } = makeScene(APP, SHOTS, tb, { board: APP.board });
 startApp({ TOTAL, FILE: 'Szemeloszlasi_vizsgalat', init, render, drawOverlay, soundUrl, warm: SHOTS.map(s => (s.t0 + s.t1) / 2) });

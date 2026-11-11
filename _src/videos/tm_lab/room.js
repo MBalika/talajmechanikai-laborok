@@ -65,7 +65,8 @@ export function buildRoom(R, { board = null, sink = false } = {}) {
     for (const y of [0.2, 0.36]) bx(-0.29, 0.29, y, y + 0.006, -0.24, 0.26, A.st, ov);
     L.ovenGlow = new THREE.PointLight(0xffb070, 0, 0.8, 2); L.ovenGlow.position.set(0, 0.4, 0); ov.add(L.ovenGlow);
     const door = new THREE.Group(); door.position.set(-0.35, 0, 0.3); ov.add(door); L.ovenDoor = door; bx(0, 0.7, 0.0, 0.62, 0, 0.025, M(0xc6c9cc, { metalness: 0.3, roughness: 0.4 }), door);   // zsanér balra, nyitás: rotation.y < 0
-    bx(0.06, 0.52, 0.1, 0.52, 0.025, 0.03, M(0x404850, { metalness: 0.2, roughness: 0.2 }), door); bx(0.6, 0.64, 0.25, 0.4, 0.025, 0.06, A.st, door); L.ovenHandle = V(0.62, 0.325, 0.06);
+    bx(0.06, 0.52, 0.1, 0.52, 0.025, 0.03, M(0x404850, { metalness: 0.2, roughness: 0.2 }), door);
+    door.add(cyl(0.009, 0.009, 0.16, A.st, 0.62, 0.325, 0.055, 14)); for (const y of [0.258, 0.392]) bx(0.612, 0.628, y - 0.008, y + 0.008, 0.025, 0.05, A.st, door); L.ovenHandle = V(0.62, 0.325, 0.055);   // fogantyú: rúd két tartón, a rúd mögött a kéznek hely
     L.ovenDisp = screen(ov, 0.1, 0.03, 128, 40, 0.24, 0.585, 0.305); }
   // mérleg (az asztalon, x helyét a videó adja: L.scl.G.position.x)
   { const E = new THREE.Group(); E.position.set(-0.3, BT, -1.05); G.add(E); L.scl = { G: E };
