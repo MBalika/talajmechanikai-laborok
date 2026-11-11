@@ -29,7 +29,7 @@ const CAPS = [
   [B(65.4), B(68.6), '5.4 Magasság', ['*h_d = 22,90 mm*']],
   [B(72.2), B(76.5), '6.1 Térfogatok', ['Nedvesen és kiszárítva']],
   [B(76.7), B(81.5), '6.2 Zsugorodás', ['*ε_s*: a lineáris zsugorodás']],
-  [B(81.7), B(85.0), '6.3 Minősítés', ['A zsugorodás *veszélyes* mértékű']],
+  [B(81.7), B(85.0), '6.3 Minősítés', ['Térfogatváltozás szempontjából *veszélyes*']],
   [B(85.2), B(90.5), '6.4 Zsugorodási határ', ['A száraz térfogat *telített* állapotban']],
   [B(90.7), B(96.8), '6.5 Víztartalom – térfogat', ['*w_S* alatt a térfogat', 'már *nem csökken*']],
 ];
