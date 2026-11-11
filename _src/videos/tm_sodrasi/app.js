@@ -20,9 +20,9 @@ export function build(L) {
 export function update(L, t, shot) {
   const X = L.app, inW = (a, b) => t >= tb(a) && t < tb(b); drawOven(L.ovenDisp, 105);
   const th = t < tb(8) ? { ball: 0, d: 3, L: 0.12, crumb: smooth(seg(t, tb(1.5), tb(2.5))) } : TL.thread(t); const y0 = 0.0066;
-  const rollZ = th.roll ? Math.sin(t * 7) * 0.012 : 0;
+  const lf = TL.lift(t), rollZ = th.roll ? Math.sin(t * 7) * 0.012 * (1 - lf) : 0;
   X.ball.visible = th.ball > 0.02 && t < tb(22); const rb = 0.012 * th.ball + 0.004; X.ball.scale.set(rb * 1.1, rb * 0.85, rb); X.ball.position.set(0, y0 + rb * 0.85, rollZ);
-  const showT = (th.ball < 0.98) && !th.crumb && t >= tb(8) && t < tb(22) || (t < tb(8) && false); const r = (th.d || 3) / 2000;
+  const showT = t < tb(8) ? !(th.crumb > 0) : (th.ball < 0.98) && !th.crumb && t < tb(22); const r = (th.d || 3) / 2000;
   X.thr.visible = showT && th.L > 0.005; X.thr.scale.set(r, th.L, r); X.thr.position.set(0, y0 + r, rollZ); X.thr.rotation.x = rollZ / Math.max(r, 0.001);
   const cr = th.crumb || 0, showB = cr > 0 && (t < tb(22, 2)); X.bits.forEach((b, i) => { b.m.visible = showB && !(t >= tb(22, 1) && t < tb(23)); const seg_ = th.L / 7; b.m.scale.set(0.0015, seg_ * (1 - 0.18 * cr), 0.0015); b.m.position.set(-th.L / 2 + seg_ * (i + 0.5) + b.dx * cr, y0 + 0.0015, b.dz * cr); b.m.rotation.y = b.rot * cr; });
   // tégely: a darabok bele (22–23), a mérlegre (23–24)
@@ -34,11 +34,11 @@ export function update(L, t, shot) {
 }
 function techPose(L, t, shot, th, rollZ, r) {
   const X = L.app, inW = (a, b) => t >= tb(a) && t < tb(b), Lw = (x, y, z) => L.G.localToWorld(V(x, y, z));
-  if (inW(8, 22) || t < tb(4)) { const w = techAt(L, POS.plate + 0.06, -0.55); X.plate.updateMatrixWorld(true);
-    const top = X.plate.localToWorld(V(0.0, 0.0066 + (th.ball > 0.5 ? 0.02 : 2 * r), rollZ));
+  if (inW(8, 22) || t < tb(4)) { const w = techAt(L, POS.plate + 0.06, -0.62); X.plate.updateMatrixWorld(true);
+    const lf = TL.lift(t), top = X.plate.localToWorld(V(0.035 * lf, 0.0066 + (th.ball > 0.5 ? 0.02 : 2 * r) + 0.075 * lf, rollZ + 0.02 * lf));
     const gR = palmOn(top, V(0, 1, 0), V(-0.1, 0, -1).normalize(), 'R', { curl: 0.12, gap: 0.011 }); gR.pole = V(-0.9, -0.5, -0.3);
     const gL = rest('L', X.plate.localToWorld(V(-0.16, 0.007, 0.06)), V(0.3, 0, -1));
-    reachW(w, { R: gR, L: gL }, { look: 0.6, lean: 0.16 }); return; }
-  if (inW(22, 24)) { const w = techAt(L, POS.plate + 0.3, -0.55); const c = X.tin.getWorldPosition(V()).add(V(0, 0.011, 0)); reachW(w, { R: holdV('R', c, 0.03, { curl: 0.8 }), L: rest('L', Lw(POS.plate + 0.05, BT + 0.007, -0.93), V(0.3, 0, -1)) }, { look: 0.5, lean: 0.12 }); return; }
+    reachW(w, { R: gR, L: gL }, { look: 0.6, lean: 0.26 }); return; }
+  if (inW(22, 24)) { const w = techAt(L, POS.plate + 0.3, -0.62); const c = X.tin.getWorldPosition(V()).add(V(0, 0.011, 0)); reachW(w, { R: holdV('R', c, 0.03, { curl: 0.8 }), L: rest('L', Lw(POS.plate + 0.05, BT + 0.007, -0.93), V(0.3, 0, -1)) }, { look: 0.5, lean: 0.12 }); return; }
   poseAtPC(L);
 }

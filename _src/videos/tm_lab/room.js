@@ -7,7 +7,7 @@ import { gripCylinder, palmOn, POLE } from '../../kit/grip.js';
 
 export const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 export const LX = 300, BT = 0.9;                       // a labor a világ x = 300 környékén; asztallap magassága
-export const TZ = -0.55;                                // a laboráns szokásos helye (z) az asztal előtt
+export const TZ = -0.6;                                // a laboráns szokásos helye (z) az asztal előtt
 export { THREE, M, box, cyl, setRod, gripCylinder, palmOn, POLE, clamp, lerp, smooth, seg, mulberry32 };
 
 export function bx(x0, x1, y0, y1, z0, z1, m, parent) { const b = box(x1 - x0, y1 - y0, z1 - z0, m, (x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2); if (parent) parent.add(b); return b; }
@@ -96,11 +96,11 @@ export function drawPC(S, t, title, draw) { const fr = Math.floor(t * 8); if (S.
   if (draw) draw(g); S.t.needsUpdate = true; }
 
 // ---------------- laboráns ----------------
-export function reachW(w, pts, extra = {}) { w.updateWorldMatrix(true, false); const r = { ...extra }; for (const k of ['L', 'R']) if (pts[k]) { const p = pts[k]; r[k] = { palm: p.palm, contact: p.contact, axis: p.axis, axisPt: p.axisPt, radius: p.radius, gap: p.gap, ftilt: p.ftilt, local: w.worldToLocal(p.p.clone()), fdir: p.fdir, ldir: p.ldir, curl: p.curl, w: p.w, pole: p.pole ?? POLE[k] }; } w.userData.reach = r; }
+export function reachW(w, pts, extra = {}) { w.updateWorldMatrix(true, false); const r = { ...extra }; r.lean = Math.min(0.32, (extra.lean ?? 0) + 0.06); for (const k of ['L', 'R']) if (pts[k]) { const p = pts[k]; r[k] = { palm: p.palm, contact: p.contact, axis: p.axis, axisPt: p.axisPt, radius: p.radius, gap: p.gap, ftilt: p.ftilt, local: w.worldToLocal(p.p.clone()), fdir: p.fdir, ldir: p.ldir, curl: p.curl, w: p.w, pole: p.pole ?? POLE[k] }; } w.userData.reach = r; }
 export const Wp = (L, x, y, z) => L.G.localToWorld(V(x, y, z));     // labor-helyi → világ
 export function techAt(L, x, z = TZ, ry = Math.PI) { const w = L.tech; w.position.set(x, 0, z); w.rotation.y = ry; w.updateWorldMatrix(true, false); L.G.updateMatrixWorld(true); return w; }
 // tenyér egy vízszintes felületen (pl. asztal, készülék teteje); F az ujjak iránya
-export function rest(side, p, F = V(0, 0, -1), o = {}) { const g = palmOn(p, V(0, 1, 0), F.clone().normalize(), side, { curl: o.curl ?? 0.3, gap: o.gap ?? 0.022 }); g.pole = side === 'L' ? V(0.9, -0.5, -0.3) : V(-0.9, -0.5, -0.3); return g; }
+export function rest(side, p, F = V(0, 0, -1), o = {}) { if (!o.force) return undefined; const g = palmOn(p, V(0, 1, 0), F.clone().normalize(), side, { curl: o.curl ?? 0.05, gap: o.gap ?? 0.024 }); g.pole = side === 'L' ? V(0.9, -0.5, -0.3) : V(-0.9, -0.5, -0.3); return g; }   // alapból: a szabad kéz lazán lóg
 // függőleges hengeres tárgy (pohár, tégely, kúp-nyél) oldalról fogva
 export function holdV(side, c, r, o = {}) { const from = o.from ?? (side === 'L' ? V(0.35, -0.25, -1) : V(-0.35, -0.25, -1)); const g = gripCylinder(c, V(0, 1, 0), r, from.normalize(), side, { curl: o.curl, palmOff: o.palmOff ?? 0.012 }); g.pole = side === 'L' ? V(0.9, -0.5, -0.25) : V(-0.9, -0.5, -0.25); return g; }
 // két kézzel két oldalról (nagy henger / doboz)
@@ -109,8 +109,8 @@ export function holdBoth(c, r, o = {}) { const gL = gripCylinder(c.clone().add(V
   gL.contact = c.clone().add(V(-r, 0, 0)); gR.contact = c.clone().add(V(r, 0, 0)); gL.axisPt = c.clone(); gR.axisPt = c.clone(); gL.radius = gR.radius = r; return { L: gL, R: gR }; }
 // alapállás a számítógépnél
 export function poseAtPC(L) { const w = techAt(L, 2.8); const pc = L.pc.g; pc.updateMatrixWorld(true);
-  const kL = palmOn(pc.localToWorld(V(-0.07, 0.03, 0.24)), V(0, 1, 0), V(0.2, 0, -1).normalize(), 'L', { curl: 0.35, gap: 0.03 }); kL.pole = V(0.9, -0.5, -0.3);
-  const mR = palmOn(pc.localToWorld(V(0.32, 0.036, 0.255)), V(0, 1, 0), V(0, 0, -1), 'R', { curl: 0.45, gap: 0.014 }); mR.pole = V(-0.9, -0.5, -0.3);
+  const kL = palmOn(pc.localToWorld(V(-0.07, 0.03, 0.24)), V(0, 1, 0), V(0.2, 0, -1).normalize(), 'L', { curl: 0.2, gap: 0.034 }); kL.pole = V(0.9, -0.5, -0.3);
+  const mR = palmOn(pc.localToWorld(V(0.32, 0.036, 0.255)), V(0, 1, 0), V(0, 0, -1), 'R', { curl: 0.25, gap: 0.022 }); mR.pole = V(-0.9, -0.5, -0.3);
   reachW(w, { L: kL, R: mR }, { look: 0.3, lean: 0.06 }); }
 // lerakás-pálya: felemel – átvisz – leenged (k: 0…1)
 export function carryPath(a, b, k, hgt = 0.12) { const u = smooth(clamp(k / 0.3)), w = smooth(clamp((k - 0.25) / 0.5)), d = smooth(clamp((k - 0.7) / 0.3)); return V(lerp(a.x, b.x, w), a.y + hgt * u - (a.y + hgt - b.y) * d, lerp(a.z, b.z, w)); }

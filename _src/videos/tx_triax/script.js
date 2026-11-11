@@ -64,7 +64,7 @@ export function drawOverlay(O, t, ctx) {
     [66, 92, 'CU  konszolidált, drénezetlen', COL.CU], [92, 112, 'CD  konszolidált, drénezett', COL.CD], [112, 122, 'Melyiket mikor?', C.accent]];
   for (const [b0, b1, n, c] of CHP) chip(O, n, win(t, B(b0), B(b1), 0.25, 0.25), c);
   // ---- 1. próbatest
-  if (t > B(10.5) && t < B(13.5)) L3(O, proj, W3(EXT.x - 0.5, BT + 0.14, EXT.z), 'HIDRAULIKUS KITOLÓ', win(t, B(11), B(13.5), 0.3, 0.3), { dx: -60, dy: -170 });
+  if (t > B(10.5) && t < B(13.5)) L3(O, proj, W3(EXT.x - 0.22, BT + 0.13, EXT.z), 'HIDRAULIKUS KITOLÓ', win(t, B(11), B(13.5), 0.3, 0.3), { dx: -60, dy: -170 });
   if (t > B(13.5) && t < B(17.5)) { L3(O, proj, W3(LAT.x - 0.02, BT + 0.31, LAT.z - 0.13), 'TALAJESZTERGA', win(t, B(14), B(17.5), 0.3, 0.3), { dx: -200, dy: -60 });
     L3(O, proj, W3(LAT.x + 0.03, BT + 0.06, LAT.z + 0.02), 'Ø 50 mm', win(t, B(15.3), B(17.5), 0.3, 0.3), { dx: 170, dy: 90, color: C.white }); }
   if (t > B(17.5) && t < B(20)) { L3(O, proj, W3(SCL.x - 0.05, BT + 0.05, SCL.z + 0.12), 'm = 382,9 g', win(t, B(18.2), B(20), 0.3, 0.3), { dx: -240, dy: -150, color: C.white });

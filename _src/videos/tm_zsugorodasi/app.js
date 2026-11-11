@@ -37,11 +37,11 @@ export function update(L, t, shot) {
 }
 function techPose(L, t, shot) {
   const X = L.app, inW = (a, b) => t >= tb(a) && t < tb(b), Lw = (x, y, z) => L.G.localToWorld(V(x, y, z));
-  if (inW(8, 11)) { const w = techAt(L, POS.plate + 0.08, -0.55); const c = Lw(POS.plate, BT + 0.05, -1.0); const gR = palmOn(c.clone().add(V(0.01 * Math.sin(t * 5), 0, 0)), V(0, 1, 0), V(-0.1, 0, -1).normalize(), 'R', { curl: 0.4, gap: 0.02 }); gR.pole = V(-0.9, -0.5, -0.3);
+  if (inW(8, 11)) { const w = techAt(L, POS.plate + 0.08, -0.62); const c = Lw(POS.plate, BT + 0.05, -1.0); const gR = palmOn(c.clone().add(V(0.01 * Math.sin(t * 5), 0, 0)), V(0, 1, 0), V(-0.1, 0, -1).normalize(), 'R', { curl: 0.4, gap: 0.02 }); gR.pole = V(-0.9, -0.5, -0.3);
     reachW(w, { R: gR, L: rest('L', Lw(POS.plate - 0.15, BT + 0.007, -0.93), V(0.3, 0, -1)) }, { look: 0.55, lean: 0.15 }); return; }
-  if (inW(11, 13.5)) { const w = techAt(L, POS.plate + 0.08, -0.55); const c = X.ring.getWorldPosition(V()).add(V(0, 0.015, 0)); const gR = palmOn(c, V(0, 1, 0), V(-0.1, 0, -1).normalize(), 'R', { curl: 0.5, gap: 0.02 }); gR.pole = V(-0.9, -0.5, -0.3);
+  if (inW(11, 13.5)) { const w = techAt(L, POS.plate + 0.08, -0.62); const c = X.ring.getWorldPosition(V()).add(V(0, 0.015, 0)); const gR = palmOn(c, V(0, 1, 0), V(-0.1, 0, -1).normalize(), 'R', { curl: 0.5, gap: 0.02 }); gR.pole = V(-0.9, -0.5, -0.3);
     reachW(w, { R: gR, L: rest('L', Lw(POS.plate - 0.15, BT + 0.007, -0.93), V(0.3, 0, -1)) }, { look: 0.55, lean: 0.15 }); return; }
-  if (inW(16, 19) || inW(26, 29)) { const w = techAt(L, POS.glass + 0.12, -0.55); X.cal.updateMatrixWorld(true); const c = X.cal.localToWorld(V(0.05, 0, 0)); const gR = gripCylinder(c, V(1, 0, 0), 0.006, V(0, -0.5, -1).normalize(), 'R', { curl: 1.0, palmOff: 0.012 }); gR.pole = V(-0.9, -0.5, -0.3);
+  if (inW(16, 19) || inW(26, 29)) { const w = techAt(L, POS.glass + 0.12, -0.62); X.cal.updateMatrixWorld(true); const c = X.cal.localToWorld(V(0.05, 0, 0)); const gR = gripCylinder(c, V(1, 0, 0), 0.006, V(0, -0.5, -1).normalize(), 'R', { curl: 1.0, palmOff: 0.012 }); gR.pole = V(-0.9, -0.5, -0.3);
     reachW(w, { R: gR, L: rest('L', Lw(POS.glass - 0.15, BT + 0.004, -0.93), V(0.3, 0, -1)) }, { look: 0.6, lean: 0.14 }); return; }
   poseAtPC(L);
 }

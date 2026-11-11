@@ -43,7 +43,7 @@ export function drawOverlay(O, t, ctx) {
     logChart(O, 1000, 170, 860, 560, a, { xmin: 1.0, xmax: lg(50), ymin: 42, ymax: 53, xticks: [1, lg(20), lg(25), lg(40)], yticks: [44, 48, 52], title: 'Casagrande · szemilogaritmikus' },
       [{ pts, upto: 1, color: COL.cas, width: 0.001, dots: 7, glow: false, head: false }, { pts: [[lg(12), TL.WL_CAS + (lg(12) - lg(25)) * s], [lg(45), TL.WL_CAS + (lg(45) - lg(25)) * s]], upto: k, color: C.white, width: 3 }],
       [{ x: lg(25), y: TL.WL_CAS, color: COL.acc, a: win(t, B(44.3), B(48), 0.3, 0.3), vline: true, hline: true, text: 'w_L = 47,2 %', dx: 16, dy: -26, size: 30 }]);
-    axisLab(O, 1000, 170, 860, 560, a, 'N [ütés]', 'w [%]'); }
+    axisLab(O, 1000, 170, 860, 560, a, 'N [ütés]', 'w [%]', { ylBottom: true }); }
   if (t > B(45) && t < B(48.2)) formula(O, 120, 170, ['Ejtőkúp: w_L = 46,9 %', 'Casagrande: w_L = 47,2 %'], win(t, B(45.2), B(48), 0.3, 0.3), { size: 40, title: 'Folyási határ' });
   endCard(O, t, B, TOTAL, 48, 'FOLYÁSI HATÁR', '20 mm behatolás · 25 ütés', 'Következik: sodrási határ');
   runCaptions(O, t, CAPS);

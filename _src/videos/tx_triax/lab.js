@@ -384,15 +384,15 @@ function techPose(L, t, shot) {
   L.G.updateMatrixWorld(true);
   const X = L.tx; X.PL.updateMatrixWorld(true);
   const TXW = (p) => L.TX.localToWorld(p.clone());                      // keret-helyi → világ
-  const rest = (side, p, F = V(0, 0, -1)) => { const g = palmOn(p, V(0, 1, 0), F, side, { curl: 0.3, gap: 0.022 }); g.pole = side === 'L' ? V(0.9, -0.5, -0.3) : V(-0.9, -0.5, -0.3); return g; };
+  const rest = (side, p, F = V(0, 0, -1)) => undefined;   // a szabad kéz lazán lóg
   if (inW(8.25, 10.5)) { // kupak lehúzása: jobb kéz a kupakon, bal tenyér a csövön
     at(EXT.x + 0.3, -0.55); const E = L.ext; E.G.updateMatrixWorld(true); const cw = E.cap.localToWorld(V(0, 0, 0));
-    const gR = gripCylinder(cw, V(1, 0, 0), 0.042, V(-0.1, -0.35, -1).normalize(), 'R', { curl: 0.6 }); gR.pole = V(-0.9, -0.5, -0.3);
+    const gR = TL.capOffK(t) < 0.92 ? gripCylinder(cw, V(1, 0, 0), 0.042, V(-0.1, -0.35, -1).normalize(), 'R', { curl: 0.6 }) : undefined; if (gR) gR.pole = V(-0.9, -0.5, -0.3);
     const gL = rest('L', E.G.localToWorld(V(0.18, E.yc + 0.038, 0)), V(0.2, 0, -1).normalize());
     reachW(w, { L: gL, R: gR }, { look: 0.45, lean: 0.12 }); return; }
   if (inW(10.5, 13.5)) { // kitoló: a bal kéz mutatóujja a kezelődoboz zöld gombján, a jobb tenyér a csövön nyugszik
     at(EXT.x + 0.02, -0.55); const E = L.ext; E.G.updateMatrixWorld(true); const bp = E.ctl.localToWorld(V(-0.025, E.btnY, 0)), fw = E.ctl.localToWorld(V(0, E.btnY, -1)).sub(E.ctl.localToWorld(V(0, E.btnY, 0))).normalize();
-    const gL = palmOn(bp.clone().addScaledVector(fw, -0.04), V(0, 1, 0), fw, 'L', { curl: 0.55, gap: 0.03 }); gL.pole = V(0.9, -0.5, -0.3);
+    const gL = palmOn(bp.clone().addScaledVector(fw, -0.04), V(0, 1, 0), fw, 'L', { curl: 0.12, gap: 0.038 }); gL.pole = V(0.9, -0.5, -0.3);
     const gR = palmOn(W(L, EXT.x + 0.14, BT + 0.11 + 0.038, EXT.z), V(0, 1, 0), V(0.15, 0, -1).normalize(), 'R', { curl: 0.85, gap: 0.026 }); gR.pole = V(-0.9, -0.5, -0.3);
     reachW(w, { L: gL, R: gR }, { look: 0.45, lean: 0.1 }); return; }
   if (inW(13.5, 17.5)) { // eszterga: bal kéz a hajtókar gombján, jobb a kés nyelén
@@ -403,12 +403,12 @@ function techPose(L, t, shot) {
   const restL = () => rest('L', TXW(V(-0.12, 0.162, 0.13)), V(0.3, 0, -1).normalize());
   if (inW(20, 21.2) || inW(22.8, 24)) { // kőlap / fejrész: jobb kéz fogja oldalról, bal tenyér a keret alapján
     at(FRX + 0.12, -0.6); const obj = inW(20, 21.2) ? X.cStone : X.cTop, hy = inW(20, 21.2) ? STN / 2 : 0.0006 + STN + CAPH * 0.5, r = inW(20, 21.2) ? R0 : R0 + 0.001;
-    const c = TXW(obj.position.clone().add(V(0, hy, 0))); const gR = gripCylinder(c, V(0, 1, 0), r, V(-0.2, -0.3, -1).normalize(), 'R', { curl: 0.7, palmOff: 0.012 }); gR.pole = V(-0.9, -0.5, -0.3);
+    const top = TXW(obj.position.clone().add(V(0, inW(20, 21.2) ? STN + 0.001 : 0.0006 + STN + CAPH, 0))); const gR = palmOn(top, V(0, 1, 0), V(-0.15, 0, -1).normalize(), 'R', { curl: 0.55, gap: 0.018 }); gR.pole = V(-0.9, -0.5, -0.3);
     reachW(w, { L: restL(), R: gR }, { look: 0.5, lean: 0.14 }); return; }
   if (inW(21.2, 22.8)) { // a minta két kézzel, két oldalról
     at(FRX + 0.15, -0.58); const c = TXW(X.cSpec.position);
-    const gL = gripCylinder(c.clone().add(V(-R0, 0, 0)), V(0, 1, 0), 0.006, V(1, 0, 0.1).normalize(), 'L', { curl: 0.5, palmOff: 0.012 }); gL.pole = V(0.9, -0.5, -0.2);
-    const gR = gripCylinder(c.clone().add(V(R0, 0, 0)), V(0, 1, 0), 0.006, V(-1, 0, 0.1).normalize(), 'R', { curl: 0.5, palmOff: 0.012 }); gR.pole = V(-0.9, -0.5, -0.2);
+    const gL = gripCylinder(c.clone().add(V(-R0, 0, 0)), V(0, 1, 0), 0.006, V(1, 0, 0.1).normalize(), 'L', { curl: 0.1, palmOff: 0.022 }); gL.pole = V(0.9, -0.5, -0.2);
+    const gR = gripCylinder(c.clone().add(V(R0, 0, 0)), V(0, 1, 0), 0.006, V(-1, 0, 0.1).normalize(), 'R', { curl: 0.1, palmOff: 0.022 }); gR.pole = V(-0.9, -0.5, -0.2);
     gL.contact = c.clone().add(V(-R0, 0, 0)); gR.contact = c.clone().add(V(R0, 0, 0)); gL.axisPt = c.clone(); gR.axisPt = c.clone(); gL.radius = gR.radius = R0;
     reachW(w, { L: gL, R: gR }, { look: 0.5, lean: 0.14 }); return; }
   if (inW(24, 28.25)) { // membránfeszítő két kézzel, oldalról (leengedés, gyűrűk legördítése, levétel)
@@ -435,7 +435,7 @@ function techPose(L, t, shot) {
   // alapállás: a számítógépnél (bal kéz a billentyűzeten, jobb az egéren)
   at(PC.x + 0.05, -0.55); const pc = L.pc.g; pc.updateMatrixWorld(true);
   const kL = palmOn(pc.localToWorld(V(-0.07, 0.03, 0.24)), V(0, 1, 0), V(0.2, 0, -1).normalize(), 'L', { curl: 0.35, gap: 0.03 }); kL.pole = V(0.9, -0.5, -0.3);
-  const mR = palmOn(pc.localToWorld(V(0.32, 0.036, 0.255)), V(0, 1, 0), V(0, 0, -1), 'R', { curl: 0.45, gap: 0.014 }); mR.pole = V(-0.9, -0.5, -0.3);
+  const mR = palmOn(pc.localToWorld(V(0.32, 0.036, 0.255)), V(0, 1, 0), V(0, 0, -1), 'R', { curl: 0.25, gap: 0.022 }); mR.pole = V(-0.9, -0.5, -0.3);
   reachW(w, { L: kL, R: mR }, { look: 0.3, lean: 0.06 });
 }
 

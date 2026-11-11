@@ -20,8 +20,8 @@ export function drawOverlay(O, t, ctx) {
   openTitle(O, t, B, TOTAL, { q1: 'Mennyi benne a szerves anyag?', q2: 'Elégetjük 550 °C-on', title: 'Szervesanyag-\ntartalom', sub: 'Izzítási veszteség' });
   for (const [b0, b1, n] of [[8, 17, '1  Előkészítés'], [17, 26, '2  Izzítás'], [26, 31, '3  Számítás'], [31, 40, '4  Értelmezés']]) chip(O, n, win(t, B(b0), B(b1), 0.25, 0.25));
   badge(O, 'EN 17685-1', win(t, B(8.2), B(40), 0.4, 0.4));
-  if (t > B(11) && t < B(14)) { L3(O, proj, W3(POS.des, BT + 0.17, -1.1), 'EXSZIKKÁTOR', win(t, B(11.6), B(14), 0.3, 0.3), { dx: -170, dy: -90 }); L3(O, proj, W3(POS.furn, BT + 0.5, -1.15), 'IZZÍTÓKEMENCE', win(t, B(12), B(14), 0.3, 0.3), { dx: 150, dy: -90 }); }
-  if (t > B(19) && t < B(23)) clockCard(O, win(t, B(19.3), B(23), 0.3, 0.3), 'IZZÍTÁS', (2 * seg(t, B(19.2), B(22.8))).toFixed(1).replace('.', ',') + ' óra', { color: COL.hot });
+  if (t > B(11) && t < B(14)) { L3(O, proj, W3(POS.des, BT + 0.17, -1.1), 'EXSZIKKÁTOR', win(t, B(11.6), B(14), 0.3, 0.3), { dx: -170, dy: -90 }); L3(O, proj, W3(POS.furn, BT + 0.5, -1.15), 'IZZÍTÓKEMENCE', win(t, B(12), B(14), 0.3, 0.3), { dx: 150, dy: 60 }); }
+  if (t > B(19) && t < B(23)) clockCard(O, win(t, B(19.3), B(23), 0.3, 0.3), 'IZZÍTÁS', (2 * seg(t, B(19.2), B(22.8))).toFixed(1).replace('.', ',') + ' óra', { color: COL.hot, x: 1410, y: 452 });
   if (t > B(14) && t < B(26.2)) { const rows = [['m_c (üres tégely)', f3(TL.MC)], ['m_1 (+ talaj)', t > B(15.8) ? f3(TL.M1) : '…'], ['m_2 (izzítás után)', t > B(25.2) ? f3(TL.M2) : '…']];
     table(O, 1180, 170, 680, ['tömeg', '[g]'], rows, win(t, B(15.4), B(26), 0.3, 0.3), { n: t < B(17) ? 1 + clamp(seg(t, B(15.6), B(16.6))) : t < B(25) ? 2 : 3, title: 'Mérések', cols: [440, 200], size: 28, rowH: 46 }); }
   if (t > B(26) && t < B(31.2)) { const a = win(t, B(26.2), B(31), 0.3, 0.3); formula(O, 120, 170, ['w_{LOI} = (m_1 − m_2) / (m_1 − m_c) · 100 %', 'w_{LOI} = 0,880 / 10,000 · 100 = 8,8 %', 'két minta átlaga: 8,9 %'], a, { size: 38, title: 'Izzítási veszteség', color: COL.hot }); }

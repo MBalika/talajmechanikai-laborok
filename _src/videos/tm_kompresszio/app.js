@@ -40,12 +40,12 @@ export function update(L, t, shot) {
 }
 function techPose(L, t, shot, st) {
   const X = L.app, O = X.O, inW = (a, b) => t >= tb(a) && t < tb(b), Lw = (x, y, z) => L.G.localToWorld(V(x, y, z));
-  if (inW(8, 11)) { const w = techAt(L, POS.plate + 0.08, -0.55); const c = X.cRing.getWorldPosition(V()).add(V(0, 0.02, 0)); const gR = palmOn(c, V(0, 1, 0), V(-0.1, 0, -1).normalize(), 'R', { curl: 0.5, gap: 0.02 }); gR.pole = V(-0.9, -0.5, -0.3);
+  if (inW(8, 11)) { const w = techAt(L, POS.plate + 0.08, -0.62); const c = X.cRing.getWorldPosition(V()).add(V(0, 0.02, 0)); const gR = palmOn(c, V(0, 1, 0), V(-0.1, 0, -1).normalize(), 'R', { curl: 0.5, gap: 0.02 }); gR.pole = V(-0.9, -0.5, -0.3);
     reachW(w, { R: gR, L: rest('L', Lw(POS.plate - 0.15, BT + 0.007, -0.93), V(0.3, 0, -1)) }, { look: 0.55, lean: 0.15 }); return; }
-  if (inW(11, 15)) { const x = X.cRing.position.x; const w = techAt(L, x + 0.05, -0.55); const c = X.cRing.getWorldPosition(V()).add(V(0, 0.01, 0)); reachW(w, holdBoth(c, 0.0395, { curl: 0.6 }), { look: 0.55, lean: 0.15 }); return; }
-  if (inW(15, 16)) { const w = techAt(L, POS.oed + 0.05, -0.55); O.updateMatrixWorld(true); const c = O.top.getWorldPosition(V()).add(V(0, 0.014, 0)); reachW(w, { R: holdV('R', c, 0.037, { curl: 0.7 }), L: rest('L', Lw(POS.oed - 0.2, BT + 0.04, -0.98), V(0.3, 0, -1)) }, { look: 0.6, lean: 0.15 }); return; }
-  if (inW(17, 19.5)) { const w = techAt(L, POS.oed + 0.1, -0.55); O.updateMatrixWorld(true); const c = O.dialG.localToWorld(V(0.02, 0, 0.03)); const gR = palmOn(c, V(0, 0, 1), V(0, 1, 0), 'R', { curl: 0.5, gap: 0.02 }); gR.pole = V(-0.9, -0.5, -0.3);
+  if (inW(11, 15)) { const x = X.cRing.position.x; const w = techAt(L, x + 0.05, -0.62); const c = X.cRing.getWorldPosition(V()).add(V(0, 0.016, 0)); reachW(w, holdBoth(c, 0.0395, { curl: 0.35 }), { look: 0.55, lean: 0.15 }); return; }
+  if (inW(15, 16)) { const w = techAt(L, POS.oed + 0.05, -0.62); O.updateMatrixWorld(true); const c = O.top.getWorldPosition(V()).add(V(0, 0.014, 0)); reachW(w, { R: holdV('R', c, 0.037, { curl: 0.7 }), L: rest('L', Lw(POS.oed - 0.2, BT + 0.04, -0.98), V(0.3, 0, -1)) }, { look: 0.6, lean: 0.15 }); return; }
+  if (inW(17, 19.5)) { const w = techAt(L, POS.oed + 0.1, -0.62); O.updateMatrixWorld(true); const c = O.dialG.localToWorld(V(0.02, 0, 0.03)); const gR = palmOn(c, V(0, 0, 1), V(0, 1, 0), 'R', { curl: 0.5, gap: 0.02 }); gR.pole = V(-0.9, -0.5, -0.3);
     reachW(w, { R: gR, L: rest('L', Lw(POS.oed - 0.2, BT + 0.04, -0.98), V(0.3, 0, -1)) }, { look: 0.6, lean: 0.12 }); return; }
-  if (X.cDisc.visible) { const c = X.cDisc.getWorldPosition(V()).add(V(0, 0.01, 0)); const w = techAt(L, (POS.oed + 0.86 + POS.stack) / 2 + 0.05, -0.55); reachW(w, holdBoth(c, 0.06, { curl: 0.6 }), { look: 0.5, lean: 0.12 }); return; }
+  if (X.cDisc.visible) { const c = X.cDisc.getWorldPosition(V()).add(V(0, 0.01, 0)); const w = techAt(L, (POS.oed + 0.86 + POS.stack) / 2 + 0.05, -0.62); reachW(w, holdBoth(c, 0.06, { curl: 0.6 }), { look: 0.5, lean: 0.12 }); return; }
   poseAtPC(L);
 }

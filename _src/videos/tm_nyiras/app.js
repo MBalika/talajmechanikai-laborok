@@ -14,12 +14,15 @@ export function build(L) {
   const A = new THREE.Group(); X.O.add(A); X.A = A;
   // sínek, kád (a mozgó rész), motor, erőmérő
   bx(-0.25, 0.3, 0.04, 0.046, -0.06, 0.06, st, A); X.bath = new THREE.Group(); A.add(X.bath); const bm = new THREE.MeshStandardMaterial({ color: 0xb9bec4, metalness: 0.7, roughness: 0.3, side: THREE.DoubleSide });
-  bx(-0.08, 0.08, 0.046, 0.05, -0.08, 0.08, bm, X.bath); for (const [x0, x1, z0, z1] of [[-0.08, 0.08, -0.08, -0.076], [-0.08, 0.08, 0.076, 0.08], [-0.08, -0.076, -0.08, 0.08], [0.076, 0.08, -0.08, 0.08]]) bx(x0, x1, 0.05, 0.085, z0, z1, bm, X.bath);
+  bx(-0.08, 0.08, 0.046, 0.05, -0.08, 0.08, bm, X.bath); X.bathW = [[-0.08, 0.08, -0.08, -0.076], [-0.08, 0.08, 0.076, 0.08], [-0.08, -0.076, -0.08, 0.08], [0.076, 0.08, -0.08, 0.08]].map(([x0, x1, z0, z1]) => bx(x0, x1, 0.05, 0.085, z0, z1, bm, X.bath));
   X.bWater = bx(-0.076, 0.076, 0.05, 0.08, -0.076, 0.076, MAT.water, X.bath); X.bWater.renderOrder = 11;
-  const ringBox = (y0, y1, par) => { const m = M(0xd6dde2, { metalness: 0.85, roughness: 0.2 }); for (const [x0, x1, z0, z1] of [[-0.045, 0.045, -0.045, -SB], [-0.045, 0.045, SB, 0.045], [-0.045, -SB, -SB, SB], [SB, 0.045, -SB, SB]]) bx(x0, x1, y0, y1, z0, z1, m, par); };
-  X.lower = new THREE.Group(); X.bath.add(X.lower); ringBox(0.05, 0.066, X.lower); X.lower.add(bx(-SB, SB, 0.05, 0.054, -SB, SB, MAT.stone, null));
+  const ringBox = (y0, y1, par) => { const m = M(0xd6dde2, { metalness: 0.85, roughness: 0.2 }); return [[-0.045, 0.045, -0.045, -SB], [-0.045, 0.045, SB, 0.045], [-0.045, -SB, -SB, SB], [SB, 0.045, -SB, SB]].map(([x0, x1, z0, z1]) => bx(x0, x1, y0, y1, z0, z1, m, par)); };
+  X.lower = new THREE.Group(); X.bath.add(X.lower); X.lowW = ringBox(0.05, 0.066, X.lower); X.lower.add(bx(-SB, SB, 0.05, 0.054, -SB, SB, MAT.stone, null));
   X.specL = bx(-SB, SB, 0.054, 0.0645, -SB, SB, SOILM('sand', 71), X.lower);
-  X.upper = new THREE.Group(); A.add(X.upper); ringBox(0.0665, 0.086, X.upper); X.specU = bx(-SB, SB, 0.0645, 0.074, -SB, SB, SOILM('sand', 71), X.upper);
+  X.upper = new THREE.Group(); A.add(X.upper); X.upW = ringBox(0.0665, 0.086, X.upper);
+  // nyírási sík kiemelése a metszeten (izzó vonal + áttetsző sík)
+  X.slip = new THREE.Group(); A.add(X.slip); X.slipLine = bx(-0.5, 0.5, -0.0008, 0.0008, -0.0008, 0.0008, new THREE.MeshBasicMaterial({ color: 0xff6a2a, transparent: true, opacity: 0 }), X.slip); X.slipLine.position.set(0, 0, SB + 0.0012);
+    X.slipPl = bx(-0.5, 0.5, -0.0003, 0.0003, -SB, SB, new THREE.MeshBasicMaterial({ color: 0xff6a2a, transparent: true, opacity: 0, depthWrite: false }), X.slip); X.slip.visible = false; X.specU = bx(-SB, SB, 0.0645, 0.074, -SB, SB, SOILM('sand', 71), X.upper);
   X.topS = bx(-SB, SB, 0.074, 0.082, -SB, SB, MAT.stone, X.upper); X.cap = bx(-SB + 0.001, SB - 0.001, 0.082, 0.1, -SB + 0.001, SB - 0.001, M(0xd6dde2, { metalness: 0.5, roughness: 0.3 }), X.upper);
   X.pins = [V(-0.04, 0.076, 0.04), V(0.04, 0.076, -0.04)].map(p => { const c = cyl(0.003, 0.003, 0.04, M(0xd23a2a), p.x, p.y, p.z, 8); A.add(c); c.home = p.clone(); return c; });
   bx(0.2, 0.3, 0.046, 0.14, -0.06, 0.06, fr, A); X.push = cyl(0.007, 0.007, 1, st, 0, 0, 0, 10); A.add(X.push);
@@ -41,7 +44,9 @@ export function update(L, t, shot) {
   setRod(X.push, V(0.2, 0.066, 0), V(0.08 + d / 1000, 0.066, 0)); setRod(X.arm, V(-0.15, 0.076, 0), V(-0.045, 0.076, 0));
   drawNum(X.disp, t >= tb(20) || t < tb(4) ? 'δ ' + d.toFixed(2).replace('.', ',') + ' mm' : 'δ 0,00 mm');
   // nyírási sík (38–42): a felső fél leemelve, a minta elcsúszott fele látszik
-  if (inW(38, 42)) { const k = smooth(seg(t, tb(38, 1), tb(39))); X.upper.position.y = v + 0.1 * k; X.specU.visible = true; }
+  { const cut = inW(38, 42); [X.lowW[1], X.upW[1], X.bathW[1]].forEach(m => m.visible = !cut); X.slip.visible = cut;
+    if (cut) { const k = smooth(seg(t, tb(38, 2), tb(39, 2))), d10 = 0.01; X.bWater.visible = false; X.upper.position.y = v + 0.004 * k; X.specU.visible = true;
+      const x0 = -SB + d10, x1 = SB; X.slip.position.set((x0 + x1) / 2, 0.0645 + v + 0.002 * k, 0); X.slipLine.scale.x = X.slipPl.scale.x = (x1 - x0); X.slipLine.material.opacity = 0.95 * k; X.slipPl.material.opacity = 0.35 * k; } }
   // kiszúrás (8–11), beépítés (11–13)
   { let p = null; const cut = smooth(seg(t, tb(8, 2), tb(10, 2))); if (inW(8, 11)) p = V(POS.plate, BT + 0.006 + 0.044 - 0.02 * cut, -1.0); else if (inW(11, 13)) p = carryPath(V(POS.plate, BT + 0.03, -1.0), V(POS.app, BT + 0.054, OZ), smooth(seg(t, tb(11), tb(12, 3))), 0.14);
     X.cutter.visible = !!p; if (p) X.cutter.position.copy(p); X.cutSpec.visible = t >= tb(9, 2); X.block.visible = t >= tb(8) && t < tb(11); }
@@ -53,10 +58,10 @@ export function update(L, t, shot) {
 }
 function techPose(L, t, shot) {
   const X = L.app, O = X.O, inW = (a, b) => t >= tb(a) && t < tb(b), Lw = (x, y, z) => L.G.localToWorld(V(x, y, z));
-  if (inW(8, 11)) { const w = techAt(L, POS.plate + 0.08, -0.55); const c = X.cutter.getWorldPosition(V()).add(V(0, 0.025, 0)); const gR = palmOn(c, V(0, 1, 0), V(-0.1, 0, -1).normalize(), 'R', { curl: 0.5, gap: 0.02 }); gR.pole = V(-0.9, -0.5, -0.3);
+  if (inW(8, 11)) { const w = techAt(L, POS.plate + 0.08, -0.62); const c = X.cutter.getWorldPosition(V()).add(V(0, 0.025, 0)); const gR = palmOn(c, V(0, 1, 0), V(-0.1, 0, -1).normalize(), 'R', { curl: 0.5, gap: 0.02 }); gR.pole = V(-0.9, -0.5, -0.3);
     reachW(w, { R: gR, L: rest('L', Lw(POS.plate - 0.15, BT + 0.007, -0.93), V(0.3, 0, -1)) }, { look: 0.55, lean: 0.15 }); return; }
-  if (inW(11, 13)) { const x = X.cutter.position.x; const w = techAt(L, x + 0.05, -0.55); const c = X.cutter.getWorldPosition(V()).add(V(0, 0.012, 0)); reachW(w, holdBoth(c, 0.045, { curl: 0.6 }), { look: 0.55, lean: 0.15 }); return; }
-  if (X.cDisc.visible) { const c = X.cDisc.getWorldPosition(V()).add(V(0, 0.01, 0)); const w = techAt(L, (POS.app + 0.86 + POS.stack) / 2 + 0.05, -0.55); reachW(w, holdBoth(c, 0.06, { curl: 0.6 }), { look: 0.5, lean: 0.12 }); return; }
-  if (inW(18, 19.5)) { const w = techAt(L, POS.app + 0.08, -0.55); const pin = X.pins[0].visible ? X.pins[0] : X.pins[1]; const c = pin.getWorldPosition(V()).add(V(0, 0.015, 0)); reachW(w, { R: holdV('R', c, 0.004, { curl: 1.2 }), L: rest('L', Lw(POS.app - 0.25, BT + 0.04, -0.98), V(0.3, 0, -1)) }, { look: 0.6, lean: 0.15 }); return; }
+  if (inW(11, 13)) { const x = X.cutter.position.x; const w = techAt(L, x + 0.05, -0.62); const c = X.cutter.getWorldPosition(V()).add(V(0, 0.016, 0)); reachW(w, holdBoth(c, 0.045, { curl: 0.25 }), { look: 0.55, lean: 0.15 }); return; }
+  if (X.cDisc.visible) { const c = X.cDisc.getWorldPosition(V()).add(V(0, 0.01, 0)); const w = techAt(L, (POS.app + 0.86 + POS.stack) / 2 + 0.05, -0.62); reachW(w, holdBoth(c, 0.06, { curl: 0.6 }), { look: 0.5, lean: 0.12 }); return; }
+  if (inW(18, 19.5)) { const w = techAt(L, POS.app + 0.08, -0.62); const pin = X.pins[0].visible ? X.pins[0] : X.pins[1]; const c = pin.getWorldPosition(V()).add(V(0, 0.015, 0)); reachW(w, { R: holdV('R', c, 0.004, { curl: 1.2 }), L: rest('L', Lw(POS.app - 0.25, BT + 0.04, -0.98), V(0.3, 0, -1)) }, { look: 0.6, lean: 0.15 }); return; }
   poseAtPC(L);
 }

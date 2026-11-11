@@ -56,15 +56,15 @@ export function update(L, t, shot) {
 function techPose(L, t, shot) {
   const X = L.app, inW = (a, b) => t >= tb(a) && t < tb(b), Lw = (x, y, z) => L.G.localToWorld(V(x, y, z));
   const spGrip = (side = 'R') => { X.sp.updateMatrixWorld(true); const c = X.sp.localToWorld(X.sp.handle.clone()), ax = X.sp.localToWorld(V(1, 0, 0)).sub(X.sp.localToWorld(V(0, 0, 0))).normalize();
-    const g = gripCylinder(c, ax, 0.009, V(-0.2, -1, -0.3).normalize(), side, { curl: 1.1, palmOff: 0.012 }); g.pole = side === 'R' ? V(-0.9, -0.5, -0.2) : V(0.9, -0.5, -0.2); return g; };
-  if (inW(8, 12) || inW(28, 30)) { const w = techAt(L, POS.plate + 0.08, -0.55); reachW(w, { R: spGrip(), L: rest('L', Lw(POS.plate - 0.2, BT + 0.007, -0.93), V(0.3, 0, -1)) }, { look: 0.55, lean: 0.15 }); return; }
-  if (inW(12, 15)) { const w = techAt(L, POS.plate - 0.02, -0.55); const c = X.fill.getWorldPosition(V()).add(V(0, 0.02, 0)); reachW(w, { R: spGrip(), L: holdV('L', c, 0.0285, { curl: 0.7 }) }, { look: 0.55, lean: 0.15 }); return; }
-  if (inW(15, 22)) { const w = techAt(L, POS.cone + 0.12, -0.55); const F = X.fc; F.updateMatrixWorld(true);
-    let gR; if (t < tb(18, 3)) { const k = F.arm.localToWorld(V(-0.06, 0.035, -0.055)); gR = gripCylinder(k, V(0, 1, 0), 0.008, V(-0.2, -0.4, -1).normalize(), 'R', { curl: 1.0, palmOff: 0.012 }); }
+    const g = palmOn(c.clone().add(V(0, 0.009, 0)), V(0, 1, 0), ax.clone().negate().setY(0).normalize(), side, { curl: 0.7, gap: 0.012 }); g.pole = side === 'R' ? V(-0.9, -0.5, -0.2) : V(0.9, -0.5, -0.2); return g; };
+  if (inW(8, 12) || inW(28, 30)) { const w = techAt(L, POS.plate - 0.06, -0.62); reachW(w, { R: spGrip(), L: rest('L', Lw(POS.plate - 0.2, BT + 0.007, -0.93), V(0.3, 0, -1)) }, { look: 0.55, lean: 0.15 }); return; }
+  if (inW(12, 15)) { const w = techAt(L, POS.plate - 0.14, -0.62); const c = X.fill.getWorldPosition(V()).add(V(0, 0.02, 0)); reachW(w, { R: spGrip(), L: holdV('L', c.clone().add(V(0, 0.026, 0)), 0.031, { curl: 0.45 }) }, { look: 0.55, lean: 0.15 }); return; }
+  if (inW(15, 22)) { const w = techAt(L, POS.cone - 0.06, -0.62); const F = X.fc; F.updateMatrixWorld(true);
+    let gR; if (t < tb(18, 3)) { const k = F.arm.localToWorld(V(-0.06, 0.052, -0.055)); gR = gripCylinder(k, V(0, 1, 0), 0.008, V(-0.2, -0.4, -1).normalize(), 'R', { curl: 0.6, palmOff: 0.014 }); }
     else { const b = F.localToWorld(F.btn.clone()); gR = palmOn(b.clone().add(V(0.012, 0, 0.0)), V(1, 0, 0), V(0, 0.15, -1).normalize(), 'R', { curl: 0.55, gap: 0.03 }); }
     gR.pole = V(-0.9, -0.5, -0.2); reachW(w, { R: gR, L: rest('L', Lw(POS.cone - 0.2, BT + 0.004, -0.92), V(0.3, 0, -1)) }, { look: 0.5, lean: 0.1 }); return; }
-  if (inW(25.5, 28)) { const w = techAt(L, (POS.cone + POS.scl) / 2 + 0.2, -0.55); const c = X.tin.getWorldPosition(V()).add(V(0, 0.011, 0)); reachW(w, { R: holdV('R', c, 0.03, { curl: 0.8 }), L: rest('L', Lw(POS.cone + 0.45, BT + 0.004, -0.9), V(0.3, 0, -1)) }, { look: 0.5, lean: 0.12 }); return; }
-  if (inW(37, 43)) { const w = techAt(L, POS.cas + 0.12, -0.55); const K = X.cas; K.updateMatrixWorld(true);
+  if (inW(25.5, 28)) { const w = techAt(L, Math.min(X.tin.position.x, POS.scl - 0.1) - 0.14, -0.62); if (t >= tb(27)) { reachW(w, {}, { look: 0.45, lean: 0.06 }); return; } const c = X.tin.getWorldPosition(V()).add(V(0, 0.022, 0)); const gR = palmOn(c, V(0, 1, 0), V(-0.1, 0, -1).normalize(), 'R', { curl: 0.4, gap: 0.014 }); gR.pole = V(-0.9, -0.5, -0.3); reachW(w, { R: gR }, { look: 0.5, lean: 0.12 }); return; }
+  if (inW(37, 43)) { const w = techAt(L, POS.cas + 0.12, -0.62); const K = X.cas; K.updateMatrixWorld(true);
     if (t < tb(38, 3)) { const c = X.grooveTool.getWorldPosition(V()).add(V(0, 0.02, 0)); const gR = gripCylinder(c, V(0, 1, 0), 0.004, V(-0.2, -0.4, -1).normalize(), 'R', { curl: 1.2, palmOff: 0.012 }); gR.pole = V(-0.9, -0.5, -0.2);
       reachW(w, { R: gR, L: rest('L', K.localToWorld(V(-0.05, 0.05, 0.04)), V(0.2, 0, -1)) }, { look: 0.6, lean: 0.14 }); return; }
     const kn = K.knob.getWorldPosition(V()); const gR = gripCylinder(kn, V(1, 0, 0), 0.009, V(0, -0.4, -1).normalize(), 'R', { curl: 1.0, palmOff: 0.012 }); gR.pole = V(-0.9, -0.5, -0.2);

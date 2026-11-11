@@ -42,7 +42,7 @@ export function drawOverlay(O, t, ctx) {
     xyChart(O, 1040, 170, 820, 560, a, { xmax: 20, ymax: 0.6, xticks: [0, 5, 10, 15, 20], yticks: [0, 0.2, 0.4, 0.6], flipY: true, title: 'Taylor · s – √t', yfmt: (v) => v.toFixed(1).replace('.', ',') },
       [{ pts, upto: 1, color: COL.tay, width: 4, dots: 5 }, { pts: l1, upto: clamp(seg(t, B(21), B(22))), color: C.white, width: 2, dash: [8, 6], glow: false, head: false }, { pts: l2, upto: clamp(seg(t, B(24.2), B(25.2))), color: COL.cas, width: 2, dash: [8, 6], glow: false, head: false }],
       [{ x: rt90, y: s90, color: COL.acc, a: win(t, B(25.4), B(28), 0.3, 0.3), vline: true, text: '√t_{90}', dx: 14, dy: -26, size: 28 }]);
-    axisLab(O, 1040, 170, 820, 560, a, '√t [√perc]', 's [mm]');
+    axisLab(O, 1040, 170, 820, 560, a, '√t [√perc]', 's [mm]', { ylBottom: true });
     if (t > B(25.2)) formula(O, 120, 170, ['t_{90} ≈ ' + Math.round(t90) + ' perc', 'c_v = T_{90} · H^2 / t_{90}', 'c_v ≈ ' + f2(cvT) + ' mm²/perc'], win(t, B(25.3), B(28), 0.3, 0.3), { size: 34, title: 'Taylor', color: COL.tay }); }
   // Casagrande
   if (t > B(28) && t < B(35.2)) { const a = win(t, B(28.2), B(35), 0.35, 0.3); const pts = TL.READ.map(x => [lg(x), TL.sOf(x)]);
@@ -50,7 +50,7 @@ export function drawOverlay(O, t, ctx) {
     logChart(O, 1040, 170, 820, 560, a, { xmin: -1, xmax: lg(1440), ymin: 0, ymax: 0.6, xticks: [-1, 0, 1, 2, 3], yticks: [0, 0.2, 0.4, 0.6], flipY: true, title: 'Casagrande · s – log t', yfmt: (v) => v.toFixed(1).replace('.', ',') },
       [{ pts, upto: 1, color: COL.cas, width: 4, dots: 5 }, { pts: tg, upto: clamp(seg(t, B(29), B(30))), color: C.white, width: 2, dash: [8, 6], glow: false, head: false }, { pts: sc, upto: clamp(seg(t, B(29.5), B(30.5))), color: C.white, width: 2, dash: [8, 6], glow: false, head: false }],
       [{ x: lt100, y: s100C, color: COL.acc, a: win(t, B(30.6), B(35), 0.3, 0.3), vline: true, text: 't_{100}', dx: 12, dy: -26, size: 28 }, { x: lg(t50), y: s50, color: COL.tay, a: win(t, B(31.2), B(35), 0.3, 0.3), vline: true, hline: true, text: 't_{50}', dx: 12, dy: -26, size: 28 }]);
-    axisLab(O, 1040, 170, 820, 560, a, 't [perc]', 's [mm]');
+    axisLab(O, 1040, 170, 820, 560, a, 't [perc]', 's [mm]', { ylBottom: true });
     if (t > B(31.2)) formula(O, 120, 170, ['t_{50} ≈ ' + Math.round(t50) + ' perc', 'c_v = 0,197 · H^2 / t_{50}', 'c_v ≈ ' + f2(cvC) + ' mm²/perc'], win(t, B(31.4), B(35), 0.3, 0.3), { size: 34, title: 'Casagrande', color: COL.cas }); }
   if (t > B(35) && t < B(40.2)) formula(O, 120, 200, ['c_v = 0,6 mm²/perc = 1,0 · 10^{−8} m²/s', 'k = c_v · γ_w / E_{oed}', 'k = 1,0·10^{−8} · 10 / 4000 ≈ 2,5·10^{−11} m/s'], win(t, B(35.2), B(40), 0.3, 0.3), { size: 36, title: 'Áteresztőképesség', color: COL.w });
   if (t > B(40) && t < B(44.2)) O.list(120, 200, 820, ['t_{90} ≈ 132 perc · t_{50} ≈ 31 perc', 'c_v ≈ 0,6 mm²/perc', 'k ≈ 2,5·10^{−11} m/s', 'Terepen: t = T · H^2 / c_v'], [B(40.2), B(40.6), B(41), B(41.4)], t, win(t, B(40.1), B(44), 0.2, 0.3), { title: 'Összegzés', color: C.accent, mark: '›', size: 32 });

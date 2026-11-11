@@ -21,7 +21,8 @@ export function drawOverlay(O, t, ctx) {
   for (const [b0, b1, n] of [[8, 22, '1  Sodrás'], [22, 28, '2  Víztartalom'], [28, 40, '3  Indexek']]) chip(O, n, win(t, B(b0), B(b1), 0.25, 0.25));
   badge(O, 'EN ISO 17892-12', win(t, B(8.2), B(40), 0.4, 0.4));
   if (t > B(8) && t < B(11)) L3(O, proj, W3(POS.plate - 0.08, BT + 0.007, -1.05), 'SZŰRŐPAPÍR', win(t, B(8.9), B(11), 0.3, 0.3), { dx: -170, dy: -90 });
-  if (t > B(14) && t < B(17.5)) L3(O, proj, W3(POS.plate - 0.03, BT + 0.009, -0.955), '3 mm-es PÁLCA', win(t, B(14.5), B(17.4), 0.3, 0.3), { dx: -200, dy: -150, color: C.white });
+  if (t > B(15.5) && t < B(17)) L3(O, proj, W3(POS.plate - 0.03, BT + 0.009, -0.955), '3 mm-es PÁLCA', win(t, B(15.6), B(16.9), 0.25, 0.25), { dx: -200, dy: -150, color: C.white });
+  if (t > B(15.5) && t < B(17)) L3(O, proj, W3(POS.plate + 0.02, BT + 0.008, -1.0), 'SZÁL · Ø 3 mm · ÉP', win(t, B(15.8), B(16.9), 0.25, 0.25), { dx: 190, dy: -130 });
   if (t > B(24) && t < B(28.2)) table(O, 1180, 170, 600, ['minta', 'w [%]'], [['1.', '24,4'], ['2.', '24,8'], ['w_P', '24,6']], win(t, B(24.4), B(28), 0.3, 0.3), { n: clamp(seg(t, B(24.5), B(27)) * 3, 0, 3), title: 'Két párhuzamos', cols: [300, 260], size: 30, rowH: 48, hi: 2 });
   if (t > B(28) && t < B(34.2)) { const a = win(t, B(28.2), B(34), 0.3, 0.3); formula(O, 120, 170, ['I_P = w_L − w_P = 22,3 %'], a, { size: 42, title: 'Plaszticitási index', color: COL.ip });
     table(O, 1180, 170, 620, ['talajtípus', 'I_P [%]'], [['iszap', '10–15'], ['sovány agyag', '15–20'], ['közepes agyag', '20–30'], ['kövér agyag', '> 30']], win(t, B(30.2), B(34), 0.3, 0.3), { n: clamp(seg(t, B(30.4), B(32.6)) * 4, 0, 4), title: 'Osztályozás', cols: [360, 220], size: 28, rowH: 46, hi: smooth(seg(t, B(32.4), B(32.8))) > 0.5 ? 2 : -1 }); }

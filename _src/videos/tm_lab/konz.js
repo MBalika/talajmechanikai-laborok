@@ -24,7 +24,7 @@ export function fallCone(G, x, z) { const F = new THREE.Group(); F.position.set(
   bx(-0.12, 0.12, 0, 0.03, -0.12, 0.12, fr, F); F.add(cyl(0.012, 0.012, 0.5, st, -0.08, 0.28, -0.06, 14));
   const arm = new THREE.Group(); F.add(arm); F.arm = arm; arm.position.y = 0.3; bx(-0.1, 0.03, -0.025, 0.025, -0.08, -0.03, fr, arm); bx(-0.03, 0.04, -0.035, 0.035, -0.045, 0.025, M(0x2a2d32, { metalness: 0.3 }), arm);
   arm.add(cyl(0.012, 0.012, 0.012, MAT.red, 0.042, 0.02, 0.0, 14).rotateZ(Math.PI / 2)); F.btn = V(0.05, 0.32, 0.0);
-  F.disp = screen(arm, 0.06, 0.022, 160, 56, 0.004, 0.0, 0.0255); arm.add(cyl(0.008, 0.008, 0.02, M(0x15171a), -0.06, 0.035, -0.055, 12));   // állítócsavar
+  F.disp = screen(arm, 0.06, 0.022, 160, 56, 0.004, 0.0, 0.0255); arm.add(cyl(0.009, 0.009, 0.04, M(0x15171a), -0.06, 0.045, -0.055, 12));   // állítócsavar
   // a kúp: 30°-os csúcsszög, 35 mm hosszú; szár + súly (80 g)
   const cone = new THREE.Group(); F.add(cone); F.cone = cone; const cm = M(0xdfe3e6, { metalness: 0.9, roughness: 0.12 });
   const c = new THREE.Mesh(new THREE.ConeGeometry(0.0094, 0.035, 32), cm); c.rotation.x = Math.PI; c.position.y = 0.0175; cone.add(c); cone.add(cyl(0.0094, 0.0094, 0.008, cm, 0, 0.039, 0, 24)); cone.add(cyl(0.0035, 0.0035, 0.16, cm, 0, 0.12, 0, 12));

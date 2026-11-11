@@ -66,17 +66,17 @@ export function update(L, t, shot) {
   // szárítószekrény ajtó, kijelző
   L.ovenDoor.rotation.y = -1.9 * TL.ovenK(t); drawOven(L.ovenDisp, 105);
   // tál: szekrény → mérleg → (később a szitasor fölé) – a soil a tálban
-  { const pOven = V(POS.oven, BT + 0.206, -1.25), pOut = V(POS.oven, BT + 0.004, -0.88), pNear = V(POS.scl + 0.3, BT + 0.004, -0.95), pScl = V(POS.scl, L.scl.panY + 0.004 - BT + BT, -1.06);
+  { const pOven = V(POS.oven, BT + 0.206, -1.04), pOut = V(POS.oven, BT + 0.004, -0.88), pNear = V(POS.scl + 0.3, BT + 0.004, -0.95), pScl = V(POS.scl, L.scl.panY + 0.004 - BT + BT, -1.06);
     let p; if (t < tb(8, 3)) p = pOven; else if (t < tb(11)) p = carryPath(pOven, pOut, TL.bowlOutK(t), 0.05); else if (t < tb(13)) p = carryPath(pNear, pScl, TL.bowlScaleK(t), 0.08); else p = null;
     X.bowl.rotation.set(0, 0, 0); X.bowl.userData.soil.visible = true;
     if (inW(19, 22)) { // öntés a szitasor tetejére: a tál a felső szita fölött, megdöntve
-      const top = V(POS.shk, BT + 0.135 + 0.04 + 8 * SH, -1.12); const k = TL.pourK(t); p = carryPath(V(POS.shk + 0.35, BT + 0.004, -0.9), top.clone().add(V(0.09, 0.07, 0.02)), clamp(k * 1.4), 0.1); X.bowl.rotation.z = 1.9 * TL.tiltK(t); X.bowl.userData.soil.visible = TL.tiltK(t) < 0.75 || t < tb(20, 2); }
+      const top = V(POS.shk, BT + 0.135 + 0.04 + 8 * SH, -1.12); const k = TL.pourK(t); p = carryPath(V(POS.shk + 0.35, BT + 0.06, -0.9), top.clone().add(V(0.09, 0.07, 0.02)), clamp(k * 1.4), 0.1); X.bowl.rotation.z = 1.9 * TL.tiltK(t); X.bowl.userData.soil.visible = TL.tiltK(t) < 0.75 || t < tb(20, 2); }
     X.bowl.visible = !!p && t >= tb(8); if (p) X.bowl.position.copy(p); }
   drawScale(L.scl.disp, inW(11, 13) && TL.bowlScaleK(t) > 0.98 ? TL.M0 : inW(27, 33) ? TL.RET[Math.min(7, Math.floor(TL.weighI(t)))] : 0);
   // mosás a 0,063-as szitán (13–17)
   { const on = inW(13, 17.5); X.wash.visible = on; L.stream.visible = on && t >= tb(13, 2) && t < tb(16, 3);
-    if (on) { const k = TL.washK(t), sw = Math.sin(t * 6) * 0.012 * (k > 0 && k < 1 ? 1 : 0); X.wash.position.set(POS.sink + sw, BT + 0.04, -1.16 + Math.cos(t * 6) * 0.01 * (k > 0 && k < 1 ? 1 : 0)); X.wash.rotation.set(0.06 * Math.sin(t * 6), 0, 0.06 * Math.cos(t * 6)); X.wash.setSoil(lerp(230, 90, smooth(k)));
-      if (L.stream.visible) setRod(L.stream, V(L.tapX, L.tapY, L.tapZ + 0.18), V(L.tapX, BT + 0.06, L.tapZ + 0.18)); } }
+    if (on) { const k = TL.washK(t), sw = Math.sin(t * 6) * 0.012 * (k > 0 && k < 1 ? 1 : 0); X.wash.position.set(POS.sink + sw, BT + 0.11, -1.04 + Math.cos(t * 6) * 0.01 * (k > 0 && k < 1 ? 1 : 0)); X.wash.rotation.set(0.06 * Math.sin(t * 6), 0, 0.06 * Math.cos(t * 6)); X.wash.setSoil(lerp(230, 90, smooth(k)));
+      if (L.stream.visible) setRod(L.stream, V(L.tapX, L.tapY, L.tapZ + 0.18), V(L.tapX, BT + 0.125, L.tapZ + 0.18)); } }
   // szitasor: öntés után a felső szitán kupac; rázás; fedél + szorító
   { const k = TL.pourK(t); X.sv.forEach((s, i) => s.setSoil(t >= tb(26, 3) ? TL.RET[i] : (i === 0 && t >= tb(20, 2) ? 360 * smooth(seg(t, tb(20, 2), tb(21, 2))) / 4 : 0), i === 0 && t < tb(26, 3) ? 1 : 0));
     const lk = TL.lidK(t); X.lid.visible = t < tb(19) || t >= tb(22); X.lid.position.y = X.lidY + (1 - lk) * 0.12 * (t < tb(23) && t >= tb(22) ? 1 : 0);
@@ -91,10 +91,10 @@ export function update(L, t, shot) {
   { const vis = inW(27, 37); const wi = TL.weighI(t), cur = Math.min(7, Math.floor(wi));
     X.row.forEach((s, i) => { s.visible = vis && !(inW(27, 33) && i === cur); s.setSoil(inW(27, 33) && i < cur ? 0 : TL.RET[i]); });
     X.held.visible = inW(27, 33); X.sclBowl.visible = inW(27, 33);
-    if (X.held.visible) { const fr = wi - cur, tilt = smooth(clamp((fr - 0.25) / 0.35)) * (1 - smooth(clamp((fr - 0.8) / 0.2))); X.held.position.set(POS.scl + 0.09, L.scl.panY + 0.07, -1.0); X.held.rotation.set(0, 0, 0.55 * tilt); X.held.setSoil(TL.RET[cur] * (1 - smooth(clamp((fr - 0.3) / 0.45)))); X.held.userData.ap = TL.SIEVES[cur];
+    if (X.held.visible) { const fr = wi - cur, tilt = smooth(clamp((fr - 0.25) / 0.35)) * (1 - smooth(clamp((fr - 0.8) / 0.2))); X.held.position.set(POS.scl + 0.09, L.scl.panY + 0.12, -0.98); X.held.rotation.set(0, 0, 0.55 * tilt); X.held.setSoil(TL.RET[cur] * (1 - smooth(clamp((fr - 0.3) / 0.45)))); X.held.userData.ap = TL.SIEVES[cur];
       X.sclBowl.position.set(POS.scl, L.scl.panY, -1.06); X.sclBowl.userData.soil.scale.y = 0.3 + 0.7 * smooth(clamp((fr - 0.3) / 0.45)); } }
   // hidrometrálás
-  { const C = X.cylG, k = X.cyl; const rz = t >= tb(38, 2) && t < tb(40, 2) ? Math.sin(TL.cylShakeK(t) * Math.PI * 6) * 2.1 : 0; k.rotation.set(rz, 0, 0); k.position.y = 0.23 + (rz !== 0 ? 0.06 : 0);
+  { const C = X.cylG, k = X.cyl; const rz = t >= tb(38, 2) && t < tb(40, 2) ? Math.sin(TL.cylShakeK(t) * Math.PI * 6) * 1.1 : 0; k.rotation.set(rz, 0, 0); k.position.y = 0.23 + (rz !== 0 ? 0.06 : 0);
     X.stop.visible = t < tb(40, 3); const u = t < tb(42) ? (t < tb(4) ? 0.35 : 0) : clamp(seg(t, tb(42), tb(47)) * 1.0); const clr = t < tb(8) ? 0.28 : t >= tb(42) ? 0.03 + 0.3 * Math.pow(u, 0.8) : 0.0;
     const top = 0.398, bot = 0.02; const hClr = (top - bot) * clr; X.clear.scale.y = Math.max(0.001, hClr); X.clear.position.y = -0.23 + top - hClr / 2; X.clear.visible = hClr > 0.002;
     X.turb.scale.y = Math.max(0.001, top - bot - hClr); X.turb.position.y = -0.23 + bot + (top - bot - hClr) / 2; X.turb.material.opacity = 0.93 - 0.18 * (t >= tb(42) ? u : t < tb(8) ? 0.4 : 0);
@@ -109,13 +109,13 @@ export function update(L, t, shot) {
 function techPose(L, t, shot) {
   const X = L.app, inW = (a, b) => t >= tb(a) && t < tb(b);
   if (inW(8, 11)) { // szárítószekrény (nyitva): a tál két kézzel ki a polcról, le az asztalra
-    const w = techAt(L, POS.oven, -0.47); const c = X.bowl.getWorldPosition(V()).add(V(0, 0.03, 0)); reachW(w, holdBothR(c, 0.078), { look: 0.5, lean: 0.2 }); return; }
-  if (inW(11, 13)) { const w = techAt(L, POS.scl + 0.2); const c = X.bowl.getWorldPosition(V()).add(V(0, 0.03, 0)); reachW(w, holdBothR(c, 0.078), { look: 0.5, lean: 0.12 }); return; }
+    const w = techAt(L, POS.oven, -0.42); const c = X.bowl.getWorldPosition(V()).add(V(0, 0.03, 0)); reachW(w, holdBothR(c, 0.078), { look: 0.5, lean: 0.2 }); return; }
+  if (inW(11, 13)) { const w = techAt(L, X.bowl.position.x + 0.02, -0.62); const c = X.bowl.getWorldPosition(V()).add(V(0, 0.03, 0)); reachW(w, holdBothR(c, 0.078), { look: 0.5, lean: 0.12 }); return; }
   if (inW(13, 17.5)) { const w = techAt(L, POS.sink, -0.52); const c = X.wash.getWorldPosition(V()).add(V(0, 0.03, 0)); reachW(w, holdBothR(c, SR), { look: 0.55, lean: 0.2 }); return; }
-  if (inW(19, 22)) { const w = techAt(L, POS.shk + 0.25, -0.55); const c = X.bowl.getWorldPosition(V()).add(V(0, 0.025, 0)); const ax = V(0, 1, 0).applyEuler(X.bowl.rotation);
+  if (inW(19, 22)) { const w = techAt(L, POS.shk + 0.25, -0.62); const c = X.bowl.getWorldPosition(V()).add(V(0, 0.025, 0)); const ax = V(0, 1, 0).applyEuler(X.bowl.rotation);
     const gR = gripCylinder(c, ax, 0.075, V(-0.6, -0.3, -0.75).normalize(), 'R', { curl: 0.6, palmOff: 0.014 }); gR.pole = V(-0.9, -0.5, -0.2);
     reachW(w, { R: gR, L: rest('L', L.G.localToWorld(V(POS.shk - 0.12, BT + 0.135, -0.98))) }, { look: 0.5, lean: 0.14 }); return; }
-  if (inW(22, 23.5)) { const w = techAt(L, POS.shk + 0.05, -0.55); X.shk.updateMatrixWorld(true); const knob = X.clamp.localToWorld(V(0.135, 0.02, 0)), knobL = X.clamp.localToWorld(V(-0.135, 0.02, 0));
+  if (inW(22, 23.5)) { const w = techAt(L, POS.shk + 0.05, -0.62); X.shk.updateMatrixWorld(true); const knob = X.clamp.localToWorld(V(0.135, 0.02, 0)), knobL = X.clamp.localToWorld(V(-0.135, 0.02, 0));
     const gR = gripCylinder(knob, V(0, 1, 0), 0.02, V(-0.3, -0.5, -1).normalize(), 'R', { curl: 0.85 }), gL = gripCylinder(knobL, V(0, 1, 0), 0.02, V(0.3, -0.5, -1).normalize(), 'L', { curl: 0.85 }); gR.pole = V(-0.9, -0.5, -0.2); gL.pole = V(0.9, -0.5, -0.2);
     if (t >= tb(23)) { const b = X.shk.localToWorld(X.btn.clone()); const gp = palmOn(b.clone().add(V(0, -0.01, 0.03)), V(0, 0, 1), V(0, 0.2, -1).normalize(), 'R', { curl: 0.5, gap: 0.03 }); gp.pole = V(-0.9, -0.5, -0.2); reachW(w, { R: gp, L: rest('L', L.G.localToWorld(V(POS.shk - 0.12, BT + 0.135, -0.98))) }, { look: 0.4, lean: 0.1 }); return; }
     reachW(w, { L: gL, R: gR }, { look: 0.5, lean: 0.12 }); return; }
@@ -123,11 +123,11 @@ function techPose(L, t, shot) {
     const gL = gripCylinder(c.clone().add(V(-SR, 0, 0).applyEuler(X.held.rotation)), ax, 0.006, V(1, 0, 0.12).normalize(), 'L', { curl: 0.55, palmOff: 0.012 }), gR = gripCylinder(c.clone().add(V(SR, 0, 0).applyEuler(X.held.rotation)), ax, 0.006, V(-1, 0, 0.12).normalize(), 'R', { curl: 0.55, palmOff: 0.012 });
     gL.contact = c.clone().add(V(-SR, 0, 0).applyEuler(X.held.rotation)); gR.contact = c.clone().add(V(SR, 0, 0).applyEuler(X.held.rotation)); gL.axisPt = gR.axisPt = c.clone(); gL.radius = gR.radius = SR; gL.pole = V(0.9, -0.5, -0.15); gR.pole = V(-0.9, -0.5, -0.15);
     reachW(w, { L: gL, R: gR }, { look: 0.5, lean: 0.14 }); return; }
-  if (inW(38, 40.75)) { const w = techAt(L, POS.cyl, -0.55); const k = X.cyl; k.updateMatrixWorld(true); const ax = V(0, 1, 0).applyQuaternion(k.getWorldQuaternion(new THREE.Quaternion()));
+  if (inW(38, 40.75)) { const w = techAt(L, POS.cyl, -0.62); const k = X.cyl; k.updateMatrixWorld(true); const ax = V(0, 1, 0).applyQuaternion(k.getWorldQuaternion(new THREE.Quaternion()));
     const top = k.localToWorld(V(0, 0.44 - 0.23 + 0.02, 0)); const gR = palmOn(top, ax, V(0, 0, -1).applyQuaternion(k.getWorldQuaternion(new THREE.Quaternion())), 'R', { curl: 0.6, gap: 0.02 }); gR.pole = V(-0.9, -0.5, -0.2);
     const lo = k.localToWorld(V(0, -0.1, 0)); const gL = gripCylinder(lo, ax, 0.034, V(0.3, 0, -1).normalize(), 'L', { curl: 0.7, palmOff: 0.012 }); gL.pole = V(0.9, -0.5, -0.2);
     reachW(w, { L: gL, R: gR }, { look: 0.5, lean: 0.12 }); return; }
-  if (inW(40.75, 42)) { const w = techAt(L, POS.cyl + 0.05, -0.55); const st = X.hyd.localToWorld(V(0, 0.27, 0)); const gR = holdV('R', st, 0.004, { curl: 1.2 });
+  if (inW(40.75, 42)) { const w = techAt(L, POS.cyl + 0.05, -0.62); const st = X.hyd.localToWorld(V(0, 0.27, 0)); const gR = holdV('R', st, 0.004, { curl: 1.2 });
     reachW(w, { R: gR, L: rest('L', L.G.localToWorld(V(POS.cyl - 0.16, BT + 0.004, -0.95))) }, { look: 0.6, lean: 0.12 }); return; }
   poseAtPC(L);
 }

@@ -25,7 +25,7 @@ Mintapélda: iszapos homok (siSa): agyag 8 %, iszap 20 %, homok 64 %, kavics 8 %
 Mintapélda: ejtőkúp w_L = 46,9 %, Casagrande w_L = 47,2 %.
 
 ## 3. Sodrási határ
-Kb. 10 g pép, szikkasztás, golyó → tenyérrel sodrás szűrőpapíros üveglapon → 3 mm-nél még ép: újragyúrás → 3 mm-nél morzsolódik → tégely, mérés, szárítás → két párhuzamos.
+Kb. 10 g pép, szikkasztás, golyó → tenyérrel sodrás szűrőpapíros üveglapon (a kéz közben felemelkedik, hogy a szál és a 3 mm-es mérőpálca látsszon) → 3 mm-nél még ép: újragyúrás → 3 mm-nél morzsolódik → tégely, mérés, szárítás → két párhuzamos.
 Mintapélda: w_P = 24,6 %; I_P = 22,3 % (közepes agyag); w = 30,2 % mellett I_C ≈ 0,75 (gyúrható).
 
 ## 4. Zsugorodási határ
@@ -45,7 +45,7 @@ Egy lépcső (100 → 200 kPa), kétirányú szűrés: H = h/2 = 9,65 mm; leolva
 Taylor (√t): 1,15-szörös egyenes → t₉₀ ≈ 130 perc, c_v = 0,848·H²/t₉₀ ≈ 0,6 mm²/perc. Casagrande (log t): t₁₀₀, t₅₀ ≈ 31 perc, c_v = 0,197·H²/t₅₀; utána másodlagos összenyomódás. k = c_v·γ_w/E_oed ≈ 2,5·10⁻¹¹ m/s.
 
 ## 8. Közvetlen nyíróvizsgálat
-Négyzetes kiszúró 60 × 60 × 20 mm → nyíródoboz (két keret, szűrőkövek, terhelőlap) vízkádban → σ = 100 kPa emelőkarral, konszolidáció → rögzítőcsapok ki → lassú, állandó sebességű nyírás, nyíróerő, vízszintes és függőleges elmozdulás → 100 / 200 / 300 kPa → Coulomb-egyenes → nyírási sík a két keret határán.
+Négyzetes kiszúró 60 × 60 × 20 mm → nyíródoboz (két keret, szűrőkövek, terhelőlap) vízkádban → σ = 100 kPa emelőkarral, konszolidáció → rögzítőcsapok ki → lassú, állandó sebességű nyírás, nyíróerő, vízszintes és függőleges elmozdulás → 100 / 200 / 300 kPa → Coulomb-egyenes → nyírási sík a két keret határán (elölről vágott nézet: az alsó fél 10 mm-rel elcsúszott, a sík kiemelve).
 Mintapélda: c′ = 8 kPa, φ′ = 28°.
 
 ## 9. Triaxiális vizsgálat

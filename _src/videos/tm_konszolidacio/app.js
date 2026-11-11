@@ -14,6 +14,6 @@ export function update(L, t, shot) {
   const carry = inW(8, 10); setOedo(O, { s, nDisc: t >= tb(10) || t < tb(4) ? 4 : 3, water: 1 });
   X.cDisc.visible = carry; if (carry) { O.updateMatrixWorld(true); const hang = L.G.worldToLocal(O.localToWorld(O.hangTop.clone())); X.cDisc.position.copy(carryPath(V(POS.stack, BT + 3 * 0.022, -1.05), hang, smooth(seg(t, tb(8, 1), tb(9, 3))), 0.08)); }
   drawPC(L.pc.scr, t, 'KONSZOLIDÁCIÓ · 100 → 200 kPa', (g) => { g.strokeStyle = '#3FE0C5'; g.lineWidth = 5; g.beginPath(); for (let i = 0; i <= 60; i++) { const tm = 0.1 * Math.pow(14400, i / 60); if (tm > m) break; const x = 80 + i / 60 * 860, y = 110 + TL.sOf(tm) / 0.55 * 420; i ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke(); });
-  if (carry) { const c = X.cDisc.getWorldPosition(V()).add(V(0, 0.01, 0)); const w = techAt(L, (POS.oed + 0.86 + POS.stack) / 2 + 0.05, -0.55); reachW(w, holdBoth(c, 0.06, { curl: 0.6 }), { look: 0.5, lean: 0.12 }); } else poseAtPC(L);
+  if (carry) { const c = X.cDisc.getWorldPosition(V()).add(V(0, 0.01, 0)); const w = techAt(L, (POS.oed + 0.86 + POS.stack) / 2 + 0.05, -0.62); reachW(w, holdBoth(c, 0.06, { curl: 0.6 }), { look: 0.5, lean: 0.12 }); } else poseAtPC(L);
   return { m };
 }

@@ -5,6 +5,7 @@ import { runCaptions } from '../../kit/hud.js';
 import { xyChart, PC } from '../../kit/plots.js';
 import { fcard } from '../../kit/x_stab.js';
 export { clamp, lerp, smooth, easeOut, seg, win, fmt, up, C, FH, FB, runCaptions, xyChart, PC, fcard };
+PC.bg = 'rgba(9,11,14,0.93)';            // a grafikonok mögött ne látsszon át a labor
 
 export function mkTime(BPM, END_BAR) { const BEAT = 60 / BPM, BAR = 4 * BEAT; const tb = (bar, beat = 0) => (bar * 4 + beat) * BEAT; return { BPM, BEAT, BAR, tb, END_BAR, TOTAL: tb(END_BAR) + 2.0 }; }
 export const L3 = (O, proj, p, text, a, o) => { if (a <= 0) return; const q = proj(...p); if (q.ok) O.label(q.x, q.y, text, a, o); };
@@ -44,8 +45,8 @@ export function formula(O, x, y, lines, a, { title = null, color = C.accent, siz
 export const logFmt = (v) => { const r = Math.pow(10, v); return r >= 1 ? String(Math.round(r)) : String(+r.toPrecision(1)).replace('.', ','); };
 export function logChart(O, x, y, w, h, a, o, series, marks) { return xyChart(O, x, y, w, h, a, { xfmt: logFmt, ...o }, series, marks); }
 // tengelyfeliratok indexes jelöléssel
-export function axisLab(O, x, y, w, h, a, xl, yl) { if (a <= 0) return; const g = O.g; g.save(); g.globalAlpha = a; O.font(20, 700, FH); g.fillStyle = 'rgba(255,255,255,0.85)'; g.textBaseline = 'alphabetic';
-  if (xl) { g.textAlign = 'right'; O.rt(xl, x + w - 30, y + h - 14); } if (yl) { g.textAlign = 'left'; O.rt(yl, x + 90, y + 92); } g.restore(); }
+export function axisLab(O, x, y, w, h, a, xl, yl, { ylBottom = false } = {}) { if (a <= 0) return; const g = O.g; g.save(); g.globalAlpha = a; O.font(20, 700, FH); g.fillStyle = 'rgba(255,255,255,0.85)'; g.textBaseline = 'alphabetic';
+  if (xl) { g.textAlign = 'right'; O.rt(xl, x + w - 30, y + h - 14); } if (yl) { g.textAlign = 'left'; O.rt(yl, x + 90, ylBottom ? y + h - 14 : y + 92); } g.restore(); }
 // hideg nyitás, címkártya, zárókép
 export function openTitle(O, t, B, TOTAL, { q1, q2, title, sub }) {
   O.letterbox(t < B(4) ? 1 - smooth(seg(t, B(3.75), B(4))) : 0, 110); const g = O.g;

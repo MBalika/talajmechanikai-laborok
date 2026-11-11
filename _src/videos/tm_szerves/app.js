@@ -18,8 +18,8 @@ export function build(L) {
   // kemence: kerámia belső tér, lefelé nyíló ajtó, kijelző
   { const F = new THREE.Group(); F.position.set(POS.furn, BT, -1.15); G.add(F); X.furn = F; const om = M(0x3b4148, { metalness: 0.3, roughness: 0.5 });
     bx(-0.24, 0.24, 0, 0.08, -0.22, 0.22, om, F); bx(-0.24, 0.24, 0.42, 0.5, -0.22, 0.22, om, F); bx(-0.24, -0.16, 0.08, 0.42, -0.22, 0.22, om, F); bx(0.16, 0.24, 0.08, 0.42, -0.22, 0.22, om, F); bx(-0.16, 0.16, 0.08, 0.42, -0.22, -0.14, om, F);
-    X.cer = new THREE.MeshStandardMaterial({ color: 0xd8c8b0, roughness: 0.9, emissive: 0xff5a1a, emissiveIntensity: 0 }); bx(-0.16, 0.16, 0.08, 0.09, -0.14, 0.18, X.cer, F); bx(-0.16, 0.16, 0.41, 0.42, -0.14, 0.18, X.cer, F); bx(-0.16, -0.15, 0.09, 0.41, -0.14, 0.18, X.cer, F); bx(0.15, 0.16, 0.09, 0.41, -0.14, 0.18, X.cer, F); bx(-0.15, 0.15, 0.09, 0.41, -0.14, -0.13, X.cer, F);
-    bx(-0.24, 0.24, -0.1, 0.0, -0.22, 0.22, om, F).position.y = 0.04; X.door = new THREE.Group(); X.door.position.set(0, 0.08, 0.22); F.add(X.door); bx(-0.17, 0.17, 0, 0.34, 0, 0.04, om, X.door); bx(-0.05, 0.05, 0.28, 0.3, 0.04, 0.07, MAT.st, X.door);
+    X.cer = new THREE.MeshStandardMaterial({ color: 0xd8c8b0, roughness: 0.9, emissive: 0xff5a1a, emissiveIntensity: 0 }); bx(-0.16, 0.16, 0.08, 0.09, -0.14, 0.18, X.cer, F); bx(-0.16, 0.16, 0.41, 0.42, -0.14, 0.18, X.cer, F); bx(-0.16, -0.15, 0.09, 0.41, -0.14, 0.18, X.cer, F); bx(0.15, 0.16, 0.09, 0.41, -0.14, 0.18, X.cer, F); bx(-0.15, 0.15, 0.09, 0.41, -0.14, -0.13, X.cer, F); F.children.forEach(o => { if (o.material === X.cer) { o.receiveShadow = false; o.castShadow = false; } });
+    X.door = new THREE.Group(); X.door.position.set(0, 0.08, 0.22); F.add(X.door); bx(-0.17, 0.17, 0, 0.34, 0, 0.04, om, X.door); bx(-0.05, 0.05, 0.28, 0.3, 0.04, 0.07, MAT.st, X.door);
     X.fdisp = screen(F, 0.12, 0.035, 192, 56, 0.17, 0.46, 0.221); X.glow = new THREE.PointLight(0xff7a2a, 0, 1.2, 2); X.glow.position.set(0, 0.25, 0.1); F.add(X.glow); }
   // exszikkátor: üveg, szilikagél, perforált lap, fedő gombbal
   { const D = new THREE.Group(); D.position.set(POS.des, BT, -1.1); G.add(D); X.des = D; const gl = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.1, 0.16, 40, 1, true), MAT.glass); gl.position.y = 0.08; gl.renderOrder = 12; D.add(gl);
@@ -27,7 +27,7 @@ export function build(L) {
     X.lid = new THREE.Group(); D.add(X.lid); const ld = new THREE.Mesh(new THREE.SphereGeometry(0.115, 32, 12, 0, Math.PI * 2, 0, 0.55), MAT.glass); ld.position.y = 0.16 - 0.115 * Math.cos(0.55) + 0.0; X.lid.add(ld); X.lid.add(cyl(0.012, 0.012, 0.02, M(0xdfe7ea, { transparent: true, opacity: 0.6 }), 0, 0.17, 0, 16)); }
   X.cr = [crucible(), crucible()]; X.cr.forEach(c => G.add(c));
   // fogó: két szár (a kéztől a tégelyig)
-  X.tong = new THREE.Group(); G.add(X.tong); for (const s of [-1, 1]) { const r = cyl(0.003, 0.003, 0.28, MAT.st, 0, 0.14, s * 0.006, 8); X.tong.add(r); }
+  X.tong = new THREE.Group(); G.add(X.tong); for (const s of [-1, 1]) { const r = cyl(0.003, 0.003, 0.38, MAT.st, 0, 0.19, s * 0.006, 8); X.tong.add(r); }
   X.spoon = cyl(0.004, 0.004, 0.16, MAT.st, 0, 0, 0, 8); G.add(X.spoon);
 }
 export function update(L, t, shot) {
@@ -48,18 +48,18 @@ export function update(L, t, shot) {
   drawScale(L.scl.disp, inW(14, 14.5) ? TL.MC : inW(14.5, 17) ? lerp(TL.MC, TL.M1, TL.fillK(t)) : inW(25, 26) || t >= tb(25) && t < tb(26) ? TL.M2 : 0, 3);
   // fogó és kanál
   { const tongOn = inW(11.5, 13) || inW(17, 18.5) || inW(23, 24.5); X.tong.visible = tongOn; X.spoon.visible = inW(14.5, 16.5);
-    if (tongOn) { const c = X.cr[0].position.clone().add(V(0, 0.03, 0)), h = c.clone().add(V(0.12, 0.2, 0.16)); X.tong.position.copy(c); X.tong.lookAt(L.G.localToWorld(h.clone())); X.tong.rotateX(Math.PI / 2); X.tongH = h; }
-    if (X.spoon.visible) { const c = X.cr[0].position.clone().add(V(0.0, 0.05, 0.0)); X.spoon.position.copy(c.clone().add(V(0.05, 0.04, 0.05))); X.spoon.rotation.set(0.7, 0, -0.7); } }
+    if (tongOn) { const c = X.cr[0].position.clone().add(V(0, 0.03, 0)), h = c.clone().add(V(0.0, 0.15, 0.35)); X.tong.position.copy(c); X.tong.lookAt(L.G.localToWorld(h.clone())); X.tong.rotateX(Math.PI / 2); X.tongH = h; }
+    if (X.spoon.visible) { const c = X.cr[0].position.clone().add(V(0.0, 0.05, 0.0)); X.spoon.position.copy(c.clone().add(V(0.02, 0.06, 0.02))); X.spoon.rotation.set(0.2, 0, -0.2); } }
   drawPC(L.pc.scr, t, 'IZZÍTÁSI VESZTESÉG · EN 17685-1', null);
   techPose(L, t, shot); return {};
 }
 function techPose(L, t, shot) {
   const X = L.app, inW = (a, b) => t >= tb(a) && t < tb(b), Lw = (x, y, z) => L.G.localToWorld(V(x, y, z));
-  if (inW(8, 11)) { const w = techAt(L, POS.mort + 0.1, -0.55); const top = X.pest.localToWorld(V(0, 0.05, 0)), ax = X.pest.localToWorld(V(0, 1, 0)).sub(X.pest.localToWorld(V(0, 0, 0))).normalize();
-    const gR = gripCylinder(top, ax, 0.013, V(-0.3, -0.3, -1).normalize(), 'R', { curl: 0.9, palmOff: 0.012 }); gR.pole = V(-0.9, -0.5, -0.2); reachW(w, { R: gR, L: holdV('L', Lw(POS.mort, BT + 0.035, -1.0), 0.055, { curl: 0.6 }) }, { look: 0.55, lean: 0.14 }); return; }
-  if (inW(11.5, 13) || inW(17, 18.5) || inW(23, 24.5)) { const x = X.cr[0].position.x; const w = techAt(L, x + 0.22, -0.55); const h = Lw(X.tongH.x, X.tongH.y, X.tongH.z); const ax = L.G.localToWorld(X.tongH.clone()).sub(L.G.localToWorld(X.cr[0].position.clone().add(V(0, 0.03, 0)))).normalize();
+  if (inW(8, 11)) { const w = techAt(L, POS.mort + 0.1, -0.62); const top = X.pest.localToWorld(V(0, 0.05, 0)), ax = X.pest.localToWorld(V(0, 1, 0)).sub(X.pest.localToWorld(V(0, 0, 0))).normalize();
+    const gR = gripCylinder(top, ax, 0.013, V(-0.3, -0.3, -1).normalize(), 'R', { curl: 0.9, palmOff: 0.012 }); gR.pole = V(-0.9, -0.5, -0.2); reachW(w, { R: gR }, { look: 0.55, lean: 0.14 }); return; }
+  if (inW(11.5, 13) || inW(17, 18.5) || inW(23, 24.5)) { const x = X.cr[0].position.x; const w = techAt(L, x - 0.16, -0.58); const h = Lw(X.tongH.x, X.tongH.y, X.tongH.z); const ax = L.G.localToWorld(X.tongH.clone()).sub(L.G.localToWorld(X.cr[0].position.clone().add(V(0, 0.03, 0)))).normalize();
     const gR = gripCylinder(h, ax, 0.008, V(-0.2, -1, -0.2).normalize(), 'R', { curl: 1.0, palmOff: 0.012 }); gR.pole = V(-0.9, -0.5, -0.2); reachW(w, { R: gR, L: rest('L', Lw(x + 0.02, BT + 0.004, -0.85), V(0.3, 0, -1)) }, { look: 0.55, lean: 0.14 }); return; }
-  if (inW(14.5, 16.5)) { const w = techAt(L, POS.scl + 0.15, -0.55); const s = X.spoon.localToWorld(V(0, 0.07, 0)); const ax = X.spoon.localToWorld(V(0, 1, 0)).sub(X.spoon.localToWorld(V(0, 0, 0))).normalize();
-    const gR = gripCylinder(s, ax, 0.004, V(-0.3, -1, -0.2).normalize(), 'R', { curl: 1.2, palmOff: 0.012 }); gR.pole = V(-0.9, -0.5, -0.2); reachW(w, { R: gR, L: rest('L', Lw(POS.scl - 0.15, BT + 0.004, -0.9), V(0.3, 0, -1)) }, { look: 0.55, lean: 0.12 }); return; }
+  if (inW(14.5, 16.5)) { const w = techAt(L, POS.scl + 0.15, -0.62); const s = X.spoon.localToWorld(V(0, 0.07, 0)); const ax = X.spoon.localToWorld(V(0, 1, 0)).sub(X.spoon.localToWorld(V(0, 0, 0))).normalize();
+    const gR = holdV('R', s, 0.004, { curl: 1.2 }); reachW(w, { R: gR }, { look: 0.55, lean: 0.12 }); return; }
   poseAtPC(L);
 }
