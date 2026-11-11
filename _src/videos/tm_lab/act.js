@@ -94,9 +94,9 @@ export class Choreo {
       o.fingers = s < 0.5 ? { a: A.fingers || 'relax', b: 'open', k: sm(s / 0.35) } : { a: 'open', b: B.fingers || 'relax', k: sm((s - 0.65) / 0.35) }; return o; }
     if (next && next.a - t < APP) { // odanyúlás: a készenléti pontból (az asztal fölött) a tárgy fölé, majd rá (főleg felülről); az ujjak az utolsó szakaszban zárnak
       const B = this.specW(next, next.a); const u = 1 - (next.a - t) / APP; const o = { ...B, W: B.W.clone() };
-      const ph = B.P.clone().setY(0); const pre = B.W.clone().addScaledVector(ph, -0.09).add(V(0, 0.085 - 0.03 * ph.length(), 0)); const rdy = this.ready(side, wk, t);
+      const ph = B.P.clone().setY(0); const pre = B.W.clone().addScaledVector(ph, -0.09).add(V(0, 0.11 - 0.03 * ph.length(), 0)); const rdy = this.ready(side, wk, t);
       if (rdy && u < 0.6) o.W.copy(rdy).lerp(pre, sm5(u / 0.6)); else o.W.copy(pre).lerp(B.W, sm5(rdy ? (u - 0.6) / 0.4 : u));
-      o.w = Math.max(idleW, rdy ? sm(u / 0.3) : sm(u / 0.7)); o.fingers = { a: 'open', b: B.fingers || 'relax', k: sm((u - 0.72) / 0.28) }; return o; }
+      o.w = Math.max(idleW, rdy ? sm(u / 0.3) : sm(u / 0.7)); o.fingers = u < 0.55 ? 'relax' : { a: 'relax', b: B.fingers || 'relax', k: sm((u - 0.55) / 0.45) }; return o; }
     if (prev && t - prev.b < RET) { // elengedés: kinyit, hátra-fel a tenyér mentén, majd vissza a készenléti pontba és leengedi
       const A = this.specW(prev, prev.b); const u = (t - prev.b) / RET; const o = { ...A, W: A.W.clone() };
       const back = A.W.clone().addScaledVector(A.P.clone().setY(0), -0.035).add(V(0, 0.075, 0)); const rdy = this.ready(side, wk, t);
@@ -117,7 +117,7 @@ export class Choreo {
       lean = Math.max(lean, need); }
     r.lean = Math.min(0.62, lean + (extra.lean ?? 0));    // (a reach.lean: kit/human.js, a törzs teljes dőlése ~1 rad/egység)
     for (const sd in hs) { const h = hs[sd]; r[sd] = { W: h.W, F: h.F, palm: h.P, contact: h.W.clone().addScaledVector(h.F, 0.065).addScaledVector(h.P, 0.028), w: h.w, fingers: h.fingers, curl: 0.8, free: h.free || null,
-      pole: h.pole || (sd === 'L' ? V(0.85, -0.45, -0.3) : V(-0.85, -0.45, -0.3)), _tips: h.tips }; r[sd].local = w.worldToLocal(r[sd].contact.clone()); }
+      pole: h.pole || (sd === 'L' ? V(0.9, -0.42, -0.1) : V(-0.9, -0.42, -0.1)), _tips: h.tips }; r[sd].local = w.worldToLocal(r[sd].contact.clone()); }
     const act = hs.R || hs.L; if (act) { const head = w.localToWorld(V(0, 1.62, 0.05)); const c = act.W.clone().addScaledVector(act.F, 0.1); const d = c.sub(head); const hz = Math.hypot(d.x, d.z); r.look = clamp(Math.atan2(-d.y, Math.max(0.15, hz)) - r.lean * 0.9, -0.2, 0.9); }
     if (extra.look !== undefined) r.look = extra.look;
     if (typeof window !== 'undefined' && window.__dbgTips) { if (!this._mk) { this._mk = []; for (let i = 0; i < 10; i++) { const m = new THREE.Mesh(new THREE.SphereGeometry(0.004, 10, 8), new THREE.MeshBasicMaterial({ color: i < 5 ? 0xff2020 : 0x20ff40, depthTest: false })); m.renderOrder = 99; this.L.G.parent.add(m); this._mk.push(m); } }

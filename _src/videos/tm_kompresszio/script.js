@@ -72,7 +72,7 @@ export function drawOverlay(O2, t, ctx) {
   if (t > B(26) && t < B(34)) L3(O_, proj, W3(POS.plate[0] + 0.04, BT + 0.05, POS.plate[1]), 'VÁGÓÉL', win(t, B(26.6), B(29.5), 0.25, 0.25), { dx: 170, dy: 60 });
   if (t > B(42) && t < B(43.2)) L3(O_, proj, W3(POS.plate[0] + 0.18, BT + 0.03, POS.plate[1] + 0.07), 'w_0 = 31,5 %', win(t, B(42.1), B(43.2), 0.2, 0.2), { dx: 140, dy: -90 });
   // 4.3 előterhelés, nullázás
-  if (t > B(70.6) && t < B(73)) L3(O_, proj, W3(O + 0.012, BT + 0.165, OZ + 0.075), t < B(72.2) ? '0,37 mm → 0' : '0,00 mm', win(t, B(70.8), B(73), 0.2, 0.2), { dx: -190, dy: -100 });
+  if (t > B(70.6) && t < B(73)) L3(O_, proj, W3(O + 0.012, BT + 0.165, OZ + 0.075), t < B(72.2) ? '0,17 mm → 0' : '0,00 mm', win(t, B(70.8), B(73), 0.2, 0.2), { dx: -190, dy: -100 });
   // 4.4 a mérőóra: mit mér – a mérőcsúcs a terhelőlap üllőjén, 1 osztás = 0,01 mm; ε = Δh / h_0
   if (t > B(73) && t < B(78.1)) { L3(O_, proj, W3(O + 0.012, BT + 0.104, OZ + 0.064), 'mérőcsúcs a terhelőlapon', win(t, B(73.6), B(78), 0.2, 0.2), { dx: 170, dy: 90 });
     L3(O_, proj, W3(O + 0.012, BT + 0.19, OZ + 0.075), '1 osztás = 0,01 mm', win(t, B(74.6), B(78), 0.2, 0.2), { dx: -200, dy: -90 });

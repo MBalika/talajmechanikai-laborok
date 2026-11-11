@@ -94,7 +94,7 @@ export function flatPalm(side, pt, N, aim, o = {}) {
 // 7) MUTATÓUJJ EGY GOMBON: a kéz tenyérrel lefelé, kissé ferdén; a mutatóujj nyújtva, hegye a gombon, a többi behajlítva
 export function fingerPress(side, pt, aim, o = {}) {
   const n = o.n ? tv(o.n).normalize() : V(0, 1, 0); const vert = Math.abs(n.y) > 0.7;   // vízszintes felület: felülről nyom; függőleges (pl. számlap): elölről érinti
-  const fr = vert ? frame(side, horiz(aim).add(V(0, -0.45, 0)), V(0, -1, 0)) : frame(side, n.clone().negate().add(V(0, -0.25, 0)), V(0, -1, 0)); const tip = tv(pt).addScaledVector(n, FSKIN * 0.6);
+  const fr = o.F ? frame(side, tv(o.F), o.P ? tv(o.P) : V(0, -1, 0)) : vert ? frame(side, horiz(aim).add(V(0, -0.45, 0)), V(0, -1, 0)) : frame(side, n.clone().negate().add(V(0, -0.25, 0)), V(0, -1, 0)); const tip = tv(pt).addScaledVector(n, FSKIN * 0.6);
   const W = tip.clone().addScaledVector(fr.F, -0.165).addScaledVector(fr.P, -0.02).addScaledVector(fr.L, -0.022);
   return tipsGrip(side, W, fr, { I: tip }, { flex: { M: [1.15, 1.3, 0.7], R: [1.2, 1.35, 0.7], P: [1.25, 1.35, 0.7] }, thumb: { tgt: [0.085, 0.03, 0.05] }, pole: o.pole });
 }

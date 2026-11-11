@@ -89,13 +89,13 @@ export function loadCap() {
   const A = mats2(); const g = new THREE.Group(); g.add(cyl(DIM.capR, DIM.capR, DIM.capH, A.alu, 0, DIM.capH / 2, 0, 48));
   for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2; g.add(cyl(0.0028, 0.0028, 0.0004, A.black, Math.cos(a) * 0.022, DIM.capH + 0.0002, Math.sin(a) * 0.022, 10)); }
   g.add(cyl(0.009, 0.012, 0.008, A.steel, 0, DIM.capH + 0.004, 0, 24)); const ball = new THREE.Mesh(new THREE.SphereGeometry(0.0055, 16, 12), A.steel); ball.position.y = DIM.capH + 0.011; g.add(ball);
-  bx(-0.006, 0.006, DIM.capH - 0.004, DIM.capH, 0.03, 0.068, A.alu, g); bx(-0.008, 0.008, DIM.capH - 0.002, DIM.capH + 0.001, 0.058, 0.07, A.steel, g);   // mérőóra-talp (z+)
-  g.anvil = V(0, DIM.capH + 0.001, 0.064); g.ballTop = DIM.capH + 0.0165; return g;
+  bx(0.006, 0.018, DIM.capH - 0.004, DIM.capH, 0.03, 0.068, A.alu, g); bx(0.003, 0.021, DIM.capH - 0.002, DIM.capH + 0.001, 0.055, 0.073, A.steel, g);   // mérőóra-talp (z+), pontosan a mérőcsúcs alatt (x = 12 mm)
+  g.anvil = V(0.012, DIM.capH + 0.001, 0.064); g.ballTop = DIM.capH + 0.0165; return g;
 }
 // ---------------- terhelőkeret ----------------
 // helyi origó: a cella közepe a keret alaplapjának tetején; a kar a cella fölött x mentén, csukló x = -0,08-nál (az oszlop mögötte),
 // akasztó x = +0,72-nél (1:10). A beam csoport forog a csukló körül (rotation.z).
-export const FR = { base: 0.03, piv: -0.08, hang: 0.72, beamY: 0.124, rod: 0.4 };
+export const FR = { base: 0.03, piv: -0.08, hang: 0.72, beamY: 0.124, rod: 0.3 };   // az akasztó tányérja ~0,74 m-en: kényelmes munkamagasság
 export function oedFrame() {
   const A = mats2(); const g = new THREE.Group(); const yb = FR.base;
   bx(-0.2, 0.13, 0, yb, -0.16, 0.12, A.cast, g); bx(-0.035, 0.035, yb, yb + 0.004, -0.035, 0.035, A.steel, g);   // alaplap, központosító
@@ -152,7 +152,7 @@ export function slotDisc(kPa, kg, r, h) {
   g.h = h + 0.0024; g.r = r; return g;   // a rés +x felé nyílik
 }
 export function toolTray() { const A = mats2(); const g = new THREE.Group(); bx(-0.1, 0.1, 0, 0.02, -0.1, 0.1, A.wood, g); bx(-0.098, 0.098, 0.0195, 0.0202, -0.0035, -0.0005, M(0x2a2118), g); return g; }   // fatálca, rajta horony az álló acélvonalzónak
-export function weightStand() { const A = mats2(); const g = new THREE.Group(); bx(-0.13, 0.13, 0, 0.02, -0.13, 0.13, A.cast, g); for (const [x, z] of [[-0.11, -0.11], [0.11, -0.11], [-0.11, 0.11], [0.11, 0.11]]) bx(x - 0.012, x + 0.012, 0.02, 0.52, z - 0.012, z + 0.012, A.cast, g); bx(-0.13, 0.13, 0.5, 0.52, -0.13, 0.13, A.cast, g); g.add(cyl(0.05, 0.05, 0.04, A.dark, 0, 0.54, 0, 32)); g.top = 0.56; return g; }   // kis talp: a tárcsák pereme túlnyúlik rajta, alá lehet nyúlni
+export function weightStand() { const A = mats2(); const g = new THREE.Group(); bx(-0.13, 0.13, 0, 0.02, -0.13, 0.13, A.cast, g); for (const [x, z] of [[-0.11, -0.11], [0.11, -0.11], [-0.11, 0.11], [0.11, 0.11]]) bx(x - 0.012, x + 0.012, 0.02, 0.62, z - 0.012, z + 0.012, A.cast, g); bx(-0.13, 0.13, 0.6, 0.62, -0.13, 0.13, A.cast, g); g.add(cyl(0.05, 0.05, 0.04, A.dark, 0, 0.64, 0, 32)); g.top = 0.66; return g; }   // kis talp: a tárcsák pereme túlnyúlik rajta, alá lehet nyúlni
 // stopper (digitális óra) a keret mellett
 export function timer() { const A = mats2(); const g = new THREE.Group(); bx(-0.045, 0.045, 0, 0.022, -0.03, 0.03, A.dark, g); g.btn = cyl(0.007, 0.007, 0.006, A.red, 0.028, 0.025, 0.0, 16); g.add(g.btn);
   const T = canvasTex(256, 96); const s = new THREE.Mesh(new THREE.PlaneGeometry(0.06, 0.0225), new THREE.MeshBasicMaterial({ map: T.t })); s.rotation.x = -Math.PI / 2 + 0.35; s.position.set(-0.012, 0.0235, 0.004); g.add(s); g.scr = T; return g; }

@@ -3,7 +3,7 @@
 // Minden mozdulatot a laboráns keze végez (tm_lab/act.js koreográfia, tm_lab/grips2.js pontos fogások).
 import { THREE, V, BT, M, cyl, bx, drawScale, drawPC } from '../tm_lab/room.js';
 import { Choreo, keyed, still, stdPoses } from '../tm_lab/act.js';
-import { diskTop, powerCyl, rimSide, bladeTop, sheetEdge, flatPalm, fingerPress } from '../tm_lab/grips3.js';
+import { diskTop, powerCyl, rimSide, bladeTop, sheetEdge, flatPalm, fingerPress, tipsGrip, wristFromPalm, frame as frame3 } from '../tm_lab/grips3.js';
 import * as O2 from '../tm_lab/oedo2.js';
 import { tb, eAt, sAt, discsOn, DISCS, STEP_T, SEQ, minAt, M_RING, M_SOIL, M_DRY } from './timeline.js';
 import { clamp, smooth, seg } from '../../kit/util.js';
@@ -149,7 +149,7 @@ function choreo(L) {
    .at(B(50.0), 2.47, z).at(B(51.5), 2.47, z).at(B(51.95), 2.25, z).at(B(53.2), 2.25, z).at(B(53.6), 2.15, z).at(B(55.0), 2.27, z).at(B(55.75), 2.25, z).at(B(57.0), 2.25, z).at(B(57.25), 2.45, z).at(B(64.4), 2.45, z).at(B(65.1), 2.48, -0.56).at(B(65.8), 2.95, -0.56).at(B(66.4), 2.95, z)
    .at(B(66.9), 3.28, z).at(B(70.5), 2.86, z).at(B(72.6), 2.86, z).at(B(78.0), 3.04, z).at(B(82.8), 3.28, z).at(B(86.12), 3.28, z).at(B(88.0), 3.28, z);
   // tárcsák: guggolva, oldallépéssel az állvány (xs) és az akasztó (xh) elé – a kezek mindig a teste előtt dolgoznak
-  { const xs = 3.84, xh = 3.69, zd = -0.68, o = { squat: 0.26 }; const first = X.discEv[0];
+  { const xs = 3.84, xh = 3.69, zd = -0.66, o = { squat: 0.12 }; const first = X.discEv[0];
     C.at(B(83.3), 3.28, z);
     for (const e of X.discEv) { const d = e.b - e.a;
       if (e.on) C.at(B(e.a - 0.03), xs, zd, o).at(B(e.a + 0.14 * d), xs, zd, o).at(B(e.a + 0.62 * d), xh, zd, o).at(B(e.b + 0.03), xh, zd, o);
@@ -193,9 +193,11 @@ function choreo(L) {
   C.holdF('R', B(67.0), B(69.5), null, crankG);
   for (const S of STEP_T) { if (S.up === undefined) continue; C.holdF('R', B(S.up - 0.05), B(S.up + 0.3), null, crankG); C.holdF('R', B(S.down[0] - 0.05), B(S.down[1] + 0.02), null, crankG); }
   C.holdF('R', B(109.35), B(110.45), null, crankG);
-  // mérőóra nullázása: a mutatóujj a számlap peremén elfordítja a skálát
-  C.holdF('R', B(71.0), B(72.4), null, (t) => { const a = 0.6 + 0.9 * smooth(seg(t, B(71.2), B(72.2))); const fr = X.fr; const bp = V(fr.position.x + 0.012, BT + 0.03 + 0.14, fr.position.z + 0.064);
-    const pt = V(bp.x + Math.cos(a) * 0.03, bp.y + Math.sin(a) * 0.03, bp.z + 0.009); return fingerPress('R', pt, aimW('R', 71.0, pt), { n: V(0, 0, 1) }); });
+  // mérőóra nullázása: a peremgyűrűt (bezel) a tetején hüvelyk és mutatóujj közé fogja (hüvelyk elöl, mutatóujj mögötte), és elforgatja – a számlap szabadon látszik
+  C.holdF('R', B(71.0), B(72.4), null, (t) => { const a = Math.PI / 2 + 0.35 - 1.07 * smooth(seg(t, B(71.2), B(72.2))); const fr = X.fr; const c = V(fr.position.x + 0.012, BT + 0.03 + 0.14, fr.position.z + 0.064);
+    const rad = V(Math.cos(a), Math.sin(a), 0); const p = c.clone().addScaledVector(rad, 0.0315); const Pn = rad.clone().negate().multiplyScalar(0.92).add(V(0, 0, -0.38)).normalize();
+    const fr3 = frame3('R', V(0, -0.15, -1), Pn); const tips = { T: p.clone().add(V(0, 0, 0.0105 + 0.007)), I: p.clone().add(V(0, 0, -0.0075 - 0.007)), M: p.clone().add(V(0, 0, -0.0075 - 0.007)).addScaledVector(rad, -0.004).addScaledVector(fr3.L, -0.016) };
+    const W = wristFromPalm(fr3, p.clone().addScaledVector(rad, 0.045).add(V(0, 0, 0.03))); return tipsGrip('R', W, fr3, tips, { flex: { R: [0.9, 1.0, 0.55], P: [0.95, 1.05, 0.6] } }); });
   // időmérő gombja (bal kéz)
   { const pt = V(POS.timer[0] + 0.028 * Math.cos(0.3), BT + 0.028, POS.timer[1] + 0.028 * Math.sin(0.3)); C.hold('L', B(86.6), B(86.98), null, fingerPress('L', pt, aimW('L', 86.6, pt))); }
   // tárcsák: két kézzel a két oldalon – hüvelyk a lap tetején, mutató- és középső ujj a paláston, a tenyér befelé-lefelé (a tárcsa helyi rendszerében: a világ +x = helyi +z)
@@ -222,7 +224,7 @@ export function update(L, t, shot) {
   const th = theta(t); X.fr.beam.rotation.z = th; const jk = X.fr.jack; const jy = jackUp(t); jk.pad.position.y = jy - 0.003; jk.screw.position.y = jy - 0.066; jk.wheel.rotation.x = wheelAng(t);
   X.fr.updateMatrixWorld(true); const hp = V(FR.hang - FR.piv, -0.012, 0).applyAxisAngle(V(0, 0, 1), th).add(X.fr.beam.position); X.fr.hanger.position.copy(hp);
   const anvil = 0.034 + 0.0206 + X.specTop(t) + 0.0006 + 0.008 + O2.DIM.capH + 0.001; X.fr.gaugeTipY(t > B(66.4) ? anvil : anvil + 0.02);
-  const raw = 0.37 + sAt(t); const zr = 0.37 * Math.PI * 2 * smooth(seg(t, B(71.2), B(72.2))); O2.drawDial(X.fr.dial, raw, zr);
+  const raw = 0.17 + sAt(t); const zr = 0.17 * Math.PI * 2 * smooth(seg(t, B(71.2), B(72.2))); O2.drawDial(X.fr.dial, raw, zr);
   X.base.setWater(0);
   X.saw.hL.rotation.x = X.saw.hR.rotation.x = -0.5 * sawK(t);
   // mérleg: gyűrű (üres), gyűrű + minta; a végén száraz minta
