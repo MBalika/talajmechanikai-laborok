@@ -48,7 +48,7 @@ export const still = (p, r = [0, 0, 0]) => { const P = toV(p), Q = qE(r); return
 
 // ---------------- koreográfia ----------------
 export class Choreo {
-  constructor(L) { this.L = L; this.props = {}; this.segs = { L: [], R: [] }; this.body = []; this.vis = {}; }
+  constructor(L, opt = {}) { this.L = L; this.opt = opt; this.props = {}; this.segs = { L: [], R: [] }; this.body = []; this.vis = {}; }
   // tárgy: obj (a labor csoportjában), pose(t) → { p, q } labor-helyi
   prop(name, obj, poseFn, vis) { this.props[name] = { obj, pose: poseFn }; if (vis) this.vis[name] = vis; return obj; }
   propPose(name, t) { return this.props[name].pose(t); }
@@ -84,6 +84,7 @@ export class Choreo {
     const cur = Ls.find(s => t >= s.a && t <= s.b); if (cur) { const o = this.specW(cur, t); o.w = 1; return o; }
     let prev = null, next = null; for (const s of Ls) { if (s.b < t) prev = s; if (s.a > t && !next) next = s; }
     const APP = 0.9, RET = 0.7, DIRECT = 1.0;
+    if (this.opt.hang && wk) { const r = this.handHang(side, t, wk, prev, next, idleW, DIRECT); if (r !== undefined) return r; }
     const mixFree = (a, b, u) => { if (!a && !b) return null; const n = { ax: V(), c: V(), a0: 0, a1: 0 }; const fa = a || { ax: b.ax, c: b.c, a0: 0, a1: 0 }, fb = b || { ax: a.ax, c: a.c, a0: 0, a1: 0 };
       const bx = fb.ax.dot(fa.ax) < 0 ? fb.ax.clone().negate() : fb.ax; const s = fb.ax.dot(fa.ax) < 0 ? -1 : 1;
       n.ax.copy(fa.ax).lerp(bx, u).normalize(); n.c.copy(fa.c).lerp(fb.c, u); n.a0 = lerp(fa.a0, s > 0 ? fb.a0 : -fb.a1, u); n.a1 = lerp(fa.a1, s > 0 ? fb.a1 : -fb.a0, u); if (fa.minDy !== undefined || fb.minDy !== undefined) n.minDy = lerp(fa.minDy ?? 0, fb.minDy ?? 0, u); return n; };
@@ -103,6 +104,31 @@ export class Choreo {
       if (u < 0.4 || !rdy) o.W.lerp(back, sm(u / 0.4)); else o.W.copy(back).lerp(rdy, sm((u - 0.4) / 0.35));
       o.w = Math.max(idleW, rdy ? 1 - sm((u - 0.72) / 0.28) : 1 - sm((u - 0.35) / 0.65)); o.fingers = { a: A.fingers || 'relax', b: 'open', k: sm(u / 0.35) }; return o; }
     return idle();
+  }
+  // „hang” mód (opt.hang): a kéz útja a lelógó helyzetből a test előtt fel a készenléti pontig (és vissza), végig teljes IK-súllyal –
+  // így félúton sem süllyed az asztal éle alá (a súlykeverés nem húzza le és előre). Két közeli fogás között a készenléti ponton át megy.
+  hangPt(side, wk, t) { const sq = this.bodyAt(t).squat || 0; return wk.localToWorld(V(side === 'L' ? 0.23 : -0.23, 1.0 - 0.5 * sq, 0.06)); }
+  handHang(side, t, wk, prev, next, idleW, DIRECT) {
+    const A2 = 1.15, R2 = 0.95, VIA = A2 + R2;
+    const rdy = this.ready(side, wk, t), hang = this.hangPt(side, wk, t); const fing = (f) => f || 'relax';
+    if (prev && next && next.a - prev.b <= DIRECT) return undefined;                       // közvetlen átmenet: a régi szabály
+    if (prev && next && next.a - prev.b <= VIA) { const A = this.specW(prev, prev.b), Bq = this.specW(next, next.a); const s = (t - prev.b) / (next.a - prev.b);
+      const back = A.W.clone().addScaledVector(A.P.clone().setY(0), -0.04).add(V(0, 0.12, 0)), pre = Bq.W.clone().addScaledVector(Bq.P.clone().setY(0), -0.055).add(V(0, 0.105, 0));
+      const o = s < 0.5 ? { ...A, W: A.W.clone() } : { ...Bq, W: Bq.W.clone() };
+      if (s < 0.2) o.W.lerp(back, sm(s / 0.2)); else if (s < 0.5) o.W.copy(back).lerp(rdy, sm((s - 0.2) / 0.3)); else if (s < 0.8) o.W.copy(rdy).lerp(pre, sm((s - 0.5) / 0.3)); else o.W.copy(pre).lerp(Bq.W, sm5((s - 0.8) / 0.2));
+      if (s >= 0.2 && s < 0.8) { const k = sm((s - 0.2) / 0.6); o.F = A.F.clone().lerp(Bq.F, k).normalize(); o.P = A.P.clone().lerp(Bq.P, k).normalize(); }
+      o.w = 1; o.fingers = s < 0.5 ? { a: fing(A.fingers), b: 'relax', k: sm(s / 0.25) } : { a: 'relax', b: fing(Bq.fingers), k: sm((s - 0.75) / 0.25) }; return o; }
+    if (next && next.a - t < A2) { const Bq = this.specW(next, next.a); const u = 1 - (next.a - t) / A2; const o = { ...Bq, W: Bq.W.clone() };
+      const pre = Bq.W.clone().addScaledVector(Bq.P.clone().setY(0), -0.055).add(V(0, 0.105, 0));
+      if (u < 0.1) o.W.copy(hang); else if (u < 0.42) o.W.copy(hang).lerp(rdy, sm((u - 0.1) / 0.32)); else if (u < 0.75) o.W.copy(rdy).lerp(pre, sm5((u - 0.42) / 0.33)); else o.W.copy(pre).lerp(Bq.W, sm5((u - 0.75) / 0.25));
+      if (u < 0.42) { const m = wk.matrixWorld; const F0 = V(0, -0.97, 0.15).transformDirection(m), P0 = V(side === 'L' ? -0.85 : 0.85, -0.2, 0.1).transformDirection(m); const k = sm(u / 0.42); o.F = F0.lerp(Bq.F, k).normalize(); o.P = P0.lerp(Bq.P, k).normalize(); }
+      o.w = Math.max(idleW, sm(u / 0.1)); o.fingers = u < 0.7 ? 'relax' : { a: 'relax', b: fing(Bq.fingers), k: sm((u - 0.7) / 0.3) }; return o; }
+    if (prev && t - prev.b < R2) { const A = this.specW(prev, prev.b); const u = (t - prev.b) / R2; const o = { ...A, W: A.W.clone() };
+      const back = A.W.clone().addScaledVector(A.P.clone().setY(0), -0.04).add(V(0, 0.12, 0));
+      if (u < 0.3) o.W.lerp(back, sm(u / 0.3)); else if (u < 0.6) o.W.copy(back).lerp(rdy, sm((u - 0.3) / 0.3)); else o.W.copy(rdy).lerp(hang, sm((u - 0.6) / 0.3));
+      if (u >= 0.6) { const m = wk.matrixWorld; const F0 = V(0, -0.97, 0.15).transformDirection(m), P0 = V(side === 'L' ? -0.85 : 0.85, -0.2, 0.1).transformDirection(m); const k = sm((u - 0.6) / 0.3); o.F = A.F.clone().lerp(F0, k).normalize(); o.P = A.P.clone().lerp(P0, k).normalize(); }
+      o.w = Math.max(idleW, 1 - sm((u - 0.9) / 0.1)); o.fingers = { a: fing(A.fingers), b: 'relax', k: sm(u / 0.3) }; return o; }
+    return undefined;
   }
   // a laboráns beállítása: test, kezek, előrehajlás, nézés
   apply(t, w, extra = {}) {

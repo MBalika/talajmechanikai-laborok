@@ -1,3 +1,0 @@
-hangszerelés: indiepop lead flute bpm 110 
-busz-RMS dB: {'drums': np.float32(-20.8), 'bass': np.float32(-29.8), 'keys': np.float32(-24.2), 'gtr': np.float32(-28.2), 'str': np.float32(-27.9), 'lead': np.float32(-27.8), 'spark': np.float32(-37.0), 'brass': np.float32(-180.0)} mély 0.37
-stem stems/indiepop.npz indiepop

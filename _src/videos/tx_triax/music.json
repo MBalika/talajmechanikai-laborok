@@ -1,5 +1,0 @@
-{ "genre": "funk", "key": 57, "seed": 1110,
-  "sections": [[0,4,"intro"],[4,8,"title"],[8,22,"grooveA"],[22,36,"grooveA2"],[36,40,"reveal"],[40,44,"build"],[44,48,"drop"],[48,66,"drive"],[66,74,"half"],[74,79,"grooveA"],[79,92,"drive"],[92,95,"build"],[95,108,"grooveB"],[108,112,"half"],[112,122,"drop"],[122,126,"grooveA"],[126,131,"outro"]],
-  "transitions": {"risers": [[3,1],[42,2],[110,2]], "impacts": [4,8,44,48,92,112], "downs": [66,108], "revcym": [36,79]},
-  "fxGain": 0.8,
-  "live": { "style": "indiepop", "seed": 1110, "styleMap": [[0,"indiepop"],[48,"funk"],[66,"brassy"],[92,"indiepop"],[112,"funk"]] } }
