@@ -54,13 +54,24 @@ export function buildSpecimen(parent) {
   const memM = new THREE.MeshStandardMaterial({ color: 0x8a6a46, transparent: true, opacity: 0.16, roughness: 0.12, metalness: 0.1, depthWrite: false });
   const mem = new THREE.Mesh(sg.clone(), memM); mem.renderOrder = 10; parent.add(mem);
   const band = new THREE.Group(); parent.add(band); const bandM = [new THREE.MeshBasicMaterial({ color: 0x120c07, transparent: true, opacity: 0, depthWrite: false }), new THREE.MeshBasicMaterial({ color: 0xd9c4ff, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending })];
-  { const tr = Math.tan(Math.PI / 3); for (const s of [1, -1]) { const pts = []; for (let i = 0; i <= 64; i++) { const a = Math.PI / 2 + s * Math.PI * i / 64; pts.push(V(Math.cos(a), tr * Math.cos(a), Math.sin(a))); }
-      const crv = new THREE.CatmullRomCurve3(pts); const c1 = new THREE.Mesh(new THREE.TubeGeometry(crv, 128, 0.06, 6), bandM[0]); c1.renderOrder = 12; const c2 = new THREE.Mesh(new THREE.TubeGeometry(crv, 128, 0.11, 6), bandM[1]); c2.renderOrder = 13; band.add(c1, c2); } }
+  const c1 = new THREE.Mesh(new THREE.BufferGeometry(), bandM[0]); c1.renderOrder = 12; const c2 = new THREE.Mesh(new THREE.BufferGeometry(), bandM[1]); c2.renderOrder = 13; band.add(c1, c2);
+  // „átlátszó” nézet: a sík kitöltése és a hátsó ív halványan a talajon át is látszik (depthTest nélkül)
+  // a csúcsokat a látósugár mentén a próbatest elülső palástja elé húzzuk: a talaj nem takarja, de ami a próbatest előtt van (rúd, cső), az igen
+  const XU = { uAxP: { value: V() }, uAxD: { value: V(0, 1, 0) }, uRad: { value: 0.03 } };
+  const xray = (m) => { m.onBeforeCompile = (sh) => { Object.assign(sh.uniforms, XU);
+      sh.vertexShader = 'uniform vec3 uAxP; uniform vec3 uAxD; uniform float uRad;\n' + sh.vertexShader.replace('#include <project_vertex>', `#include <project_vertex>
+      { vec3 wq = (modelMatrix * vec4(transformed, 1.0)).xyz, ro = cameraPosition, rd = normalize(wq - ro); float L = length(wq - ro);
+        vec3 oc = ro - uAxP, dp = rd - dot(rd, uAxD) * uAxD, op = oc - dot(oc, uAxD) * uAxD; float a = dot(dp, dp), b = 2.0 * dot(dp, op), c = dot(op, op) - uRad * uRad, D = b * b - 4.0 * a * c;
+        float te = (D > 0.0 && a > 1e-6) ? (-b - sqrt(D)) / (2.0 * a) : L; te = clamp(te - 0.0015, 0.0, L); gl_Position = projectionMatrix * viewMatrix * vec4(ro + rd * te, 1.0); }`); };
+    m.customProgramCacheKey = () => 'tx-xray'; return m; };
+  bandM.push(xray(new THREE.MeshBasicMaterial({ color: 0xb69cff, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide })), xray(new THREE.MeshBasicMaterial({ color: 0xd9c4ff, transparent: true, opacity: 0, depthWrite: false })));
+  const c3 = new THREE.Mesh(new THREE.BufferGeometry(), bandM[2]); c3.renderOrder = 11; const c4 = new THREE.Mesh(new THREE.BufferGeometry(), bandM[3]); c4.renderOrder = 11; band.add(c3, c4);
   const O = { soil, mem, mat, memM, band, bandM, base, last: '' };
   // p: { y0, H, R, ea (arány), ep (a nyírási sík megjelenése), shearOn, ev (arány), flash, glow, drains, memb, vis, vconst }
   O.set = (p) => {
     const key = [p.y0, p.H, p.R, p.ea, p.ep, p.ev, p.flash, p.vconst, p.shearOn ? 1 : 0].map(v => (+v || 0).toFixed(5)).join('|');
     mat.map = p.drains ? texD() : texP(); mat.emissiveIntensity = p.glow || 0; mem.visible = !!p.memb && p.vis !== false; soil.visible = p.vis !== false;
+    if (band.visible) { band.updateWorldMatrix(true, false); XU.uAxP.value.set(XU.ox || 0, 0, 0).applyMatrix4(band.matrixWorld); XU.uAxD.value.set(0, 1, 0).transformDirection(band.matrixWorld); }
     if (key === O.last) return O.top; O.last = key;
     const ec = (p.ev || 0) / 3, Hc = p.H * (1 - ec), Rc = p.R * (1 - ec), ea = p.ea || 0, ep = p.shearOn ? Math.min(ea, p.ep ?? 1) : ea;
     const hp = Hc * (1 - ep), bul = 1.3 * ep, TH = Math.PI / 3, cT = Math.cos(TH), sT = Math.sin(TH);
@@ -72,8 +83,18 @@ export function buildSpecimen(parent) {
       let x = ax * rr, y = u * hp; const z = az * rr, sd = (y - yc) * cT - x * sT, wv = sl > 0 ? ss(-bw, bw, sd) : 0; x -= sl * cT * wv; y -= sl * sT * wv;
       pos.setXYZ(i, x, p.y0 + y, z); mp.setXYZ(i, x + ax * 0.0007 * k, p.y0 + y, z + az * 0.0007 * k); }
     pos.needsUpdate = mp.needsUpdate = true; soil.geometry.computeVertexNormals(); mem.geometry.computeVertexNormals();
-    const sk = Math.min(1, sl * 400), fl = p.flash || 0; bandM[0].opacity = 0.95 * sk; bandM[1].opacity = 0.55 * fl * sk;
-    const rb = rA * (1 + bul * 0.5 * 1.2) + 0.0006; band.scale.set(rb, rb, rb); band.position.set(-sl * cT / 2, p.y0 + yc - sl * sT / 2, 0); band.visible = sl > 0;
+    const sk = Math.min(1, sl * 400), fl = p.flash || 0; bandM[0].opacity = 0.95 * sk; bandM[1].opacity = (0.55 + 0.4 * fl) * sk; bandM[2].opacity = (0.2 + 0.12 * fl) * sk; bandM[3].opacity = 0.3 * sk; band.visible = sl > 0;
+    if (sl > 0) { // a nyírási sík és a deformált palást metszésvonala: minden szögnél a palást pontja, ahol sd = 0 (a csúszás felével eltolva, ahogy a csúcsok is)
+      const rrU = (u) => { const c = Math.sin(Math.PI * clamp(u, 0, 1)); return rA * (1 + bul * (c * c - 0.5) * 1.2); }, tT = sT / cT, pts = [];
+      for (let i = 0; i < 120; i++) { const a = i / 120 * Math.PI * 2, ca = Math.cos(a), sa = Math.sin(a); let u = yc / hp; for (let k = 0; k < 8; k++) u = clamp((yc + rrU(u) * ca * tT) / hp, 0, 1);
+        const r = rrU(u) + 0.0004; pts.push(V(ca * r - sl * cT / 2, p.y0 + u * hp - sl * sT / 2, sa * r)); }
+      XU.ox = -sl * cT / 2; XU.uRad.value = rA * (1 + bul * 0.6) + sl * cT / 2 + 0.0012; band.updateWorldMatrix(true, false); XU.uAxP.value.set(XU.ox, 0, 0).applyMatrix4(band.matrixWorld); XU.uAxD.value.set(0, 1, 0).transformDirection(band.matrixWorld);
+      const crv = new THREE.CatmullRomCurve3(pts, true); for (const c of [c1, c2, c3, c4]) c.geometry.dispose();
+      c1.geometry = new THREE.TubeGeometry(crv, 240, 0.0006, 6, true); c2.geometry = new THREE.TubeGeometry(crv, 240, 0.0014, 8, true); c4.geometry = new THREE.TubeGeometry(crv, 240, 0.0005, 5, true);
+      const cen = pts.reduce((a, q) => a.add(q), V()).multiplyScalar(1 / pts.length), fa = [cen.x, cen.y, cen.z], ix = [], NR = 28, NP = pts.length; // sűrű háló, hogy a palástra húzott csúcsok között se bukjon a talaj mögé
+      for (let k = 1; k <= NR; k++) for (const q of pts) { const f = k / NR; fa.push(cen.x + (q.x - cen.x) * f, cen.y + (q.y - cen.y) * f, cen.z + (q.z - cen.z) * f); }
+      for (let i = 0; i < NP; i++) { const j = (i + 1) % NP; ix.push(0, 1 + i, 1 + j); for (let k = 1; k < NR; k++) { const a = 1 + (k - 1) * NP, b = 1 + k * NP; ix.push(a + i, b + i, b + j, a + i, b + j, a + j); } }
+      const fg = new THREE.BufferGeometry(); fg.setAttribute('position', new THREE.Float32BufferAttribute(fa, 3)); fg.setIndex(ix); c3.geometry = fg; }
     O.top = { y: p.y0 + Hc * (1 - ea), dx: -sl * cT, Hc, Rc, rA, bul };
     return O.top;
   };
