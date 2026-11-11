@@ -8,6 +8,7 @@ import * as THREE from 'three';
 import { M, cyl, bx, MAT, SOILM, canvasTex } from './room.js';
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 const lathe = (pts, mat, seg = 48) => { const g = new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r, y)), seg); const m = new THREE.Mesh(g, mat); m.castShadow = true; m.receiveShadow = true; return m; };
+export const JK = { x: 0.1, y: 0.065, z: 0.07, r: 0.035, knobX: 0.128 };   // a hajtókar tengelyének helye a karemelőhöz képest; a markolat közepe x-ben
 export const DIM = { ringID: 0.075, ringOD: 0.081, ringH: 0.02, stoneR: 0.0372, stoneH: 0.008, paperH: 0.0006, capR: 0.0368, capH: 0.014 };
 let MM = null;
 export function mats2() { if (MM) return MM; MM = {
@@ -115,8 +116,11 @@ export function oedFrame() {
   // karemelő (tartócsavar kézikerékkel) a kar alatt, x = 0,38
   const jk = new THREE.Group(); jk.position.set(0.38, 0, 0); g.add(jk); g.jack = jk; bx(-0.03, 0.03, 0, 0.02, -0.03, 0.03, A.cast, jk); jk.add(cyl(0.012, 0.012, 0.06, A.cast, 0, 0.05, 0, 16));
   jk.screw = cyl(0.007, 0.007, 0.12, A.steel, 0, 0, 0, 12); jk.add(jk.screw); jk.pad = cyl(0.016, 0.016, 0.006, A.rubber, 0, 0, 0, 16); jk.add(jk.pad);
-  jk.wheel = new THREE.Group(); jk.add(jk.wheel); const rim = new THREE.Mesh(new THREE.TorusGeometry(0.038, 0.004, 8, 40), A.dark); rim.rotation.x = Math.PI / 2; jk.wheel.add(rim);
-  for (let i = 0; i < 3; i++) { const sp = bx(0, 0.038, -0.0025, 0.0025, -0.0025, 0.0025, A.dark, jk.wheel); sp.rotation.y = i * Math.PI * 2 / 3; } jk.knob = cyl(0.006, 0.006, 0.03, A.black, 0.038, 0.018, 0, 12); jk.wheel.add(jk.knob);
+  // hajtókar: kúpkerekes hajtómű a csavaron, vízszintes tengely jobbra (+x), a kar a tengely végén, a markolat a tengellyel párhuzamos –
+  // a kéz elölről, tenyérrel lefelé fogja (a kar alatt bőven van hely, a kéz nem ér a karhoz)
+  bx(-0.022, 0.03, 0.04, 0.09, -0.022, 0.09, A.cast, jk); const sh = cyl(0.005, 0.005, 0.07, A.steel, 0.065, JK.y, JK.z, 12); sh.rotation.z = Math.PI / 2; jk.add(sh);
+  jk.wheel = new THREE.Group(); jk.wheel.position.set(JK.x, JK.y, JK.z); jk.add(jk.wheel); bx(-0.003, 0.003, -0.004, 0.004, -0.004, JK.r + 0.004, A.dark, jk.wheel);
+  jk.knob = cyl(0.009, 0.009, 0.05, A.black, 0.028, 0, JK.r, 16); jk.knob.rotation.z = Math.PI / 2; jk.wheel.add(jk.knob);
   // mérőóra: konzol az oszlopról, az óra a terhelőlap talpa fölött (z = 0,064), számlap előre (z+)
   const gb = new THREE.Group(); g.add(gb); g.gauge = gb; g.add(bx(FR.piv - 0.015, 0.02, yb + 0.1, yb + 0.112, -0.118, -0.102, A.steel));
   bx(0.005, 0.02, yb + 0.1, yb + 0.112, -0.11, 0.064, A.steel, g);
@@ -147,7 +151,8 @@ export function slotDisc(kPa, kg, r, h) {
   const lab = new THREE.Mesh(new THREE.PlaneGeometry(r * 1.05, r * 0.52), new THREE.MeshBasicMaterial({ map: T.t, transparent: true })); lab.rotation.x = -Math.PI / 2; lab.position.set(-r * 0.42, h + 0.0014, 0); lab.rotation.z = Math.PI / 2; g.add(lab);
   g.h = h + 0.0024; g.r = r; return g;   // a rés +x felé nyílik
 }
-export function weightStand() { const A = mats2(); const g = new THREE.Group(); bx(-0.17, 0.17, 0, 0.02, -0.17, 0.17, A.cast, g); for (const [x, z] of [[-0.15, -0.15], [0.15, -0.15], [-0.15, 0.15], [0.15, 0.15]]) bx(x - 0.012, x + 0.012, 0.02, 0.52, z - 0.012, z + 0.012, A.cast, g); bx(-0.17, 0.17, 0.5, 0.52, -0.17, 0.17, A.cast, g); g.top = 0.52; return g; }
+export function toolTray() { const A = mats2(); const g = new THREE.Group(); bx(-0.1, 0.1, 0, 0.02, -0.1, 0.1, A.wood, g); bx(-0.098, 0.098, 0.0195, 0.0202, -0.0035, -0.0005, M(0x2a2118), g); return g; }   // fatálca, rajta horony az álló acélvonalzónak
+export function weightStand() { const A = mats2(); const g = new THREE.Group(); bx(-0.13, 0.13, 0, 0.02, -0.13, 0.13, A.cast, g); for (const [x, z] of [[-0.11, -0.11], [0.11, -0.11], [-0.11, 0.11], [0.11, 0.11]]) bx(x - 0.012, x + 0.012, 0.02, 0.52, z - 0.012, z + 0.012, A.cast, g); bx(-0.13, 0.13, 0.5, 0.52, -0.13, 0.13, A.cast, g); g.add(cyl(0.05, 0.05, 0.04, A.dark, 0, 0.54, 0, 32)); g.top = 0.56; return g; }   // kis talp: a tárcsák pereme túlnyúlik rajta, alá lehet nyúlni
 // stopper (digitális óra) a keret mellett
 export function timer() { const A = mats2(); const g = new THREE.Group(); bx(-0.045, 0.045, 0, 0.022, -0.03, 0.03, A.dark, g); g.btn = cyl(0.007, 0.007, 0.006, A.red, 0.028, 0.025, 0.0, 16); g.add(g.btn);
   const T = canvasTex(256, 96); const s = new THREE.Mesh(new THREE.PlaneGeometry(0.06, 0.0225), new THREE.MeshBasicMaterial({ map: T.t })); s.rotation.x = -Math.PI / 2 + 0.35; s.position.set(-0.012, 0.0235, 0.004); g.add(s); g.scr = T; return g; }

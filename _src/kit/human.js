@@ -228,11 +228,11 @@ function solveArmFrame(sd, body, B, W0, F0, P0, free, poleHint, memo) {
     const Wr = S.clone().addScaledVector(n, dd);
     const Lh = (sd === 'L' ? new THREE.Vector3().crossVectors(fr.P, fr.F) : new THREE.Vector3().crossVectors(fr.F, fr.P)).normalize();
     const { flex, dev, pr } = armCostParts(sd, S, E, Wr, fr.F, fr.P, Lh);
-    let c = 1.0 * _pen(flex, -38, 42) + 2.2 * _pen(dev, -24, 14) + 0.6 * _pen(pr, -60, 72) + 0.035 * flex * flex + 0.07 * dev * dev + 0.008 * pr * pr;
+    let c = 1.0 * _pen(flex, -40, 45) + 2.2 * _pen(dev, -24, 14) + 0.8 * _pen(pr, -45, 95) + 0.03 * flex * flex + 0.07 * dev * dev + 0.0025 * (pr - 25) * (pr - 25);   // pronáció 0…90° természetes (tenyér lefelé fogáskor)
     const lat = sg * (E.x - S.x);                                       // a könyök oldalra (+) vagy befelé (−) a vállhoz képest
     const dT = segDist3(E, hips, neck), dM = segDist3(E.clone().add(Wr).multiplyScalar(0.5), hips, neck);
-    c += 3e4 * Math.max(0, 0.165 - dT) ** 2 + 2e4 * Math.max(0, 0.135 - dM) ** 2 + 1.2e4 * Math.max(0, E.y - S.y + 0.06) ** 2 + 2e4 * Math.max(0, -0.03 - lat) ** 2 + 3e3 * Math.max(0, S.z - 0.22 - E.z) ** 2;
-    c += 18 * (1 - Math.cos(phi)) + 45 * a * a; if (free && free.minDy !== undefined) c += 3e4 * Math.max(0, free.c.y + free.minDy - fr.W.y) ** 2;   // a kéz a fogáspont fölött maradjon (pl. lapos tárgy felvétele az asztalról)
+    c += 3e4 * Math.max(0, 0.19 - dT) ** 2 + 2.5e4 * Math.max(0, 0.155 - dM) ** 2 + 1.2e4 * Math.max(0, E.y - S.y + 0.06) ** 2 + 2e4 * Math.max(0, -0.03 - lat) ** 2 + 3e3 * Math.max(0, S.z - 0.22 - E.z) ** 2;
+    c += 40 * (1 - Math.cos(phi)) + 45 * a * a; if (free && free.minDy !== undefined) c += 3e4 * Math.max(0, free.c.y + free.minDy - fr.W.y) ** 2;   // a kéz a fogáspont fölött maradjon (pl. lapos tárgy felvétele az asztalról)
     if (near) { const dp = Math.atan2(Math.sin(phi - memo.phi), Math.cos(phi - memo.phi)); c += 30 * dp * dp + 30 * (a - memo.a) ** 2; }
     if (out) Object.assign(out, { flex, dev, pr, E, pw, c });
     return c; };

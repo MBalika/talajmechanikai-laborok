@@ -26,16 +26,16 @@ const CAPS = [
   [B(64.2), B(67), '4.1 A keretbe', ['A cellát a központosítóra,', 'a kar alá tesszük']],
   [B(67.1), B(70.6), '4.2 A kar le', ['A *karemelővel* óvatosan', 'a golyóra engedjük a kart']],
   [B(70.7), B(73), '4.3 Nullázás', ['Kis előterhelés (*< 3 kPa*),', 'a mérőórát *nullázzuk*']],
-  [B(73.1), B(78), '4.4 Elárasztás', ['Vízzel töltjük fel:', 'a minta *telített* marad']],
+  [B(73.1), B(78), '4.4 A mérőóra', ['A terhelőlap süllyedését méri:', 'ez a minta *összenyomódása* (Δh)']],
   [B(78.2), B(83), '5.1 A teher', ['A tárcsán a *mintára jutó* feszültség']],
   [B(83.1), B(86.6), '5.2 Felrakás', ['Megtámasztott karra rakjuk,', 'majd *ütés nélkül* ráengedjük']],
   [B(86.7), B(90), '5.3 Indul az óra', ['A ráengedéssel együtt', 'indítjuk az időmérőt']],
   [B(90.1), B(94), '5.4 Leolvasás', ['6 s … 30 perc, 1, 2, 4, 8', 'és *24 óra* múlva olvasunk le']],
   [B(94.2), B(98), '5.5 Lépcsők', ['Minden lépcsőben *kétszerezzük*', 'a terhet, 800 kPa-ig']],
   [B(98.1), B(102), '5.5 Lépcsők', ['Egy lépcső kb. *24 óra*:', 'kivárjuk az összenyomódást']],
-  [B(102.2), B(105.5), '6.1 Tehermentesítés', ['800-ról 100 kPa-ra:', 'a minta kissé *visszaduzzad*']],
+  [B(102.2), B(105.5), '6.1 Tehermentesítés', ['800-ról 100 kPa-ra: a minta', 'kissé *expandál*, felemelkedik']],
   [B(105.6), B(109), '6.2 Újraterhelés', ['Vissza 800 kPa-ra:', 'eleinte *merevebb* a talaj']],
-  [B(109.2), B(111), '7.1 Leeresztés', ['A vizet *leengedjük*']],
+  [B(109.2), B(111), '7.1 Kiszerelés', ['A kart felemeljük,', 'a gyűrűt *kivesszük*']],
   [B(111.1), B(114), '7.2 Száraz tömeg', ['*105 °C*-on 24 órát szárítjuk']],
   [B(118.1), B(122), '8.2 σ′ – ε görbe', ['A modulus a teherrel *nő*']],
   [B(122.1), B(125.8), '8.3 log σ′ – e', ['Casagrande-szerkesztés: *σ′_p*']],
@@ -73,8 +73,12 @@ export function drawOverlay(O2, t, ctx) {
   if (t > B(42) && t < B(43.2)) L3(O_, proj, W3(POS.plate[0] + 0.18, BT + 0.03, POS.plate[1] + 0.07), 'w_0 = 31,5 %', win(t, B(42.1), B(43.2), 0.2, 0.2), { dx: 140, dy: -90 });
   // 4.3 előterhelés, nullázás
   if (t > B(70.6) && t < B(73)) L3(O_, proj, W3(O + 0.012, BT + 0.165, OZ + 0.075), t < B(72.2) ? '0,37 mm → 0' : '0,00 mm', win(t, B(70.8), B(73), 0.2, 0.2), { dx: -190, dy: -100 });
+  // 4.4 a mérőóra: mit mér – a mérőcsúcs a terhelőlap üllőjén, 1 osztás = 0,01 mm; ε = Δh / h_0
+  if (t > B(73) && t < B(78.1)) { L3(O_, proj, W3(O + 0.012, BT + 0.104, OZ + 0.064), 'mérőcsúcs a terhelőlapon', win(t, B(73.6), B(78), 0.2, 0.2), { dx: 170, dy: 90 });
+    L3(O_, proj, W3(O + 0.012, BT + 0.19, OZ + 0.075), '1 osztás = 0,01 mm', win(t, B(74.6), B(78), 0.2, 0.2), { dx: -200, dy: -90 });
+    formula(O_, 100, 170, ['ε = Δh / h_0'], win(t, B(75.6), B(78), 0.3, 0.3), { size: 36, title: 'Fajlagos összenyomódás', color: COL.acc }); }
   // 5.1 a teher kiszámítása
-  if (t > B(78) && t < B(83.2)) formula(O_, 110, 170, ['A = 44,18 cm² (Ø 75 mm)', 'F = σ′ · A = 25 kPa · 44,18 cm² = 110 N', '1:10 karral: 11 N → 1,13 kg'], win(t, B(78.3), B(83), 0.3, 0.3), { size: 34, title: 'Mekkora tárcsa kell?', color: COL.load });
+  if (t > B(78) && t < B(83.2)) formula(O_, 110, 170, ['A = 44,18 cm² (Ø 75 mm)', 'F = σ′ · A = 25 kPa · 44,18 cm² = 110 N', '1:10 karral: 11 N → 1,13 kg'], win(t, B(79.4), B(83), 0.3, 0.3), { size: 34, title: 'Mekkora tárcsa kell?', color: COL.load });
   // 5.3–5.4 időmérő, leolvasások
   if (t > B(86.6) && t < B(94.2)) { const m = TL.minAt(t); const v = m < 1 ? Math.round(m * 60) + ' s' : m < 60 ? fmt(m, m < 10 ? 1 : 0) + ' perc' : fmt(m / 60, m < 600 ? 1 : 0) + ' óra'; clockCard(O_, win(t, B(86.8), B(94), 0.2, 0.25), 'ELTELT IDŐ', t < B(86.9) ? '0 s' : v, { y: 104 });
     const RW = [[0.1, '6 s'], [1, '1 perc'], [4, '4 perc'], [15, '15 perc'], [60, '1 óra'], [240, '4 óra'], [1440, '24 óra']]; const n = RW.filter(([mm]) => m >= mm).length;
@@ -95,7 +99,7 @@ export function drawOverlay(O2, t, ctx) {
       [{ pts: LOADPTS, upto: 1, color: COL.load, width: 4, dots: 6 }, { pts: UNPTS, upto: 1, color: COL.un, width: 4, dots: 6 }, { pts: [[100, LOADPTS[2][1]], [200, LOADPTS[3][1]]], upto: clamp(seg(t, B(119), B(119.8))), color: C.white, width: 6, glow: false, head: false }],
       []);
     axisLab(O_, 1040, 170, 820, 560, a, 'σ′ [kPa]', 'ε [%]', { ylBottom: true });
-    formula(O_, 100, 170, ['E_{oed} = Δσ′ / Δε', '100 → 200 kPa: ' + d2(EOED, 1) + ' MPa'], win(t, B(118.6), B(122), 0.3, 0.3), { size: 36, title: 'Összenyomódási modulus', color: COL.load }); }
+    formula(O_, 100, 170, ['E_{oed} = Δσ′ / Δε', '100 → 200 kPa: ' + d2(EOED, 1) + ' MPa'], win(t, B(119.2), B(122), 0.3, 0.3), { size: 36, title: 'Összenyomódási modulus', color: COL.load }); }
   // 8.3 log σ′ – e, Casagrande
   if (t > B(122) && t < B(129.2)) { const a = win(t, B(122.2), B(129), 0.3, 0.3); const P = TL.SEQ.slice(0, 6).map(q => [lg(q.s), q.e]); const U = [[lg(800), TL.SEQ[5].e], ...TL.SEQ.slice(6).map(q => [lg(q.s), q.e])];
     const curve = []; for (let x = 1.0; x <= lg(800) + 1e-6; x += 0.02) curve.push([x, TL.eOf(Math.pow(10, x))]);
@@ -108,7 +112,7 @@ export function drawOverlay(O2, t, ctx) {
     axisLab(O_, 1040, 170, 820, 560, a, 'σ′ [kPa]', 'e', { ylBottom: true });
   }
   if (t > B(125.7) && t < B(129.2)) O_.list(100, 170, 760, ['Ø 75 × 20 mm, gátolt oldalirány', 'E_{oed} ≈ ' + d2(EOED, 1) + ' MPa (100–200 kPa)', 'σ′_p ≈ ' + SP_CASA + ' kPa', 'C_c = 0,30 · C_s = 0,05'], [B(125.9), B(126.3), B(126.7), B(127.1)], t, win(t, B(125.8), B(129), 0.2, 0.3), { title: 'Eredmény', color: C.accent, mark: '›', size: 30 });
-  endCard(O_, t, B, TOTAL, 129, 'KOMPRESSZIÓ', 'ödométer · 1:10-es kar · 24 órás lépcsők', 'Következik: konszolidáció');
+  endCard(O_, t, B, TOTAL, 129, 'KOMPRESSZIÓ', null, 'Következik: konszolidáció');
   runCaptions(O_, t, CAPS);
   finish(O_, t, TOTAL, CHAPTERS);
 }

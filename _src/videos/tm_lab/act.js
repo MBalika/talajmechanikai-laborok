@@ -69,6 +69,11 @@ export class Choreo {
     const o = { W: g.W.clone().applyMatrix4(M), F: g.F.clone().transformDirection(M).normalize(), P: g.P.clone().transformDirection(M).normalize(), fingers: g.fingers, pole: g.pole ? g.pole.clone() : null };
     if (g.tips) { o.tips = {}; for (const c in g.tips) o.tips[c] = g.tips[c].clone().applyMatrix4(M); }
     if (g.free) o.free = { ax: g.free.ax.clone().transformDirection(M).normalize(), c: g.free.c.clone().applyMatrix4(M), a0: g.free.a0, a1: g.free.a1, minDy: g.free.minDy }; return o; }
+  // a váll helye (labor-helyi) egy időpontban a test kulcsai szerint; a fogások „célzása” ebből: a kéz a váll felől a tárgy felé mutat
+  shoulderAt(side, t) { const b = this.bodyAt(t); const sq = b.squat || 0; const l = V(side === 'L' ? 0.19 : -0.19, 1.36 - sq, 0.02 - 0.42 * sq).applyAxisAngle(V(0, 1, 0), b.ry); return l.add(V(b.x, 0, b.z)); }
+  aimLab(side, t, p) { const d = toV(p).sub(this.shoulderAt(side, t)); d.y = 0; return d.lengthSq() < 1e-8 ? V(0, 0, -1) : d.normalize(); }
+  // ugyanez egy tárgy helyi rendszerében (pLocal: a fogáspont a tárgyon)
+  aimLocal(side, prop, t, pLocal) { const s = this.propPose(prop, t); const pL = toV(pLocal).applyQuaternion(s.q).add(s.p); return this.aimLab(side, t, pL).applyQuaternion(s.q.clone().invert()); }
   // készenléti pont: a has előtt, az asztallap fölött (a laboráns helyi rendszerében) – innen nyúl a tárgyért, ide húzza vissza a kezét
   ready(side, wk, t) { if (!wk) return null; const sq = this.bodyAt(t).squat || 0; return wk.localToWorld(V(side === 'L' ? 0.16 : -0.16, 1.02 - 0.5 * sq, 0.26 - 0.2 * sq)); }
   hand(side, t, wk) {
@@ -78,7 +83,7 @@ export class Choreo {
     const Ls = this.segs[side]; if (!Ls.length) return idle();
     const cur = Ls.find(s => t >= s.a && t <= s.b); if (cur) { const o = this.specW(cur, t); o.w = 1; return o; }
     let prev = null, next = null; for (const s of Ls) { if (s.b < t) prev = s; if (s.a > t && !next) next = s; }
-    const APP = 0.9, RET = 0.7, DIRECT = 1.6;
+    const APP = 0.9, RET = 0.7, DIRECT = 1.0;
     const mixFree = (a, b, u) => { if (!a && !b) return null; const n = { ax: V(), c: V(), a0: 0, a1: 0 }; const fa = a || { ax: b.ax, c: b.c, a0: 0, a1: 0 }, fb = b || { ax: a.ax, c: a.c, a0: 0, a1: 0 };
       const bx = fb.ax.dot(fa.ax) < 0 ? fb.ax.clone().negate() : fb.ax; const s = fb.ax.dot(fa.ax) < 0 ? -1 : 1;
       n.ax.copy(fa.ax).lerp(bx, u).normalize(); n.c.copy(fa.c).lerp(fb.c, u); n.a0 = lerp(fa.a0, s > 0 ? fb.a0 : -fb.a1, u); n.a1 = lerp(fa.a1, s > 0 ? fb.a1 : -fb.a0, u); if (fa.minDy !== undefined || fb.minDy !== undefined) n.minDy = lerp(fa.minDy ?? 0, fb.minDy ?? 0, u); return n; };
@@ -89,7 +94,7 @@ export class Choreo {
       o.fingers = s < 0.5 ? { a: A.fingers || 'relax', b: 'open', k: sm(s / 0.35) } : { a: 'open', b: B.fingers || 'relax', k: sm((s - 0.65) / 0.35) }; return o; }
     if (next && next.a - t < APP) { // odanyúlás: a készenléti pontból (az asztal fölött) a tárgy fölé, majd rá (főleg felülről); az ujjak az utolsó szakaszban zárnak
       const B = this.specW(next, next.a); const u = 1 - (next.a - t) / APP; const o = { ...B, W: B.W.clone() };
-      const ph = B.P.clone().setY(0); const pre = B.W.clone().addScaledVector(ph, -0.04).add(V(0, 0.085, 0)); const rdy = this.ready(side, wk, t);
+      const ph = B.P.clone().setY(0); const pre = B.W.clone().addScaledVector(ph, -0.09).add(V(0, 0.085 - 0.03 * ph.length(), 0)); const rdy = this.ready(side, wk, t);
       if (rdy && u < 0.6) o.W.copy(rdy).lerp(pre, sm5(u / 0.6)); else o.W.copy(pre).lerp(B.W, sm5(rdy ? (u - 0.6) / 0.4 : u));
       o.w = Math.max(idleW, rdy ? sm(u / 0.3) : sm(u / 0.7)); o.fingers = { a: 'open', b: B.fingers || 'relax', k: sm((u - 0.72) / 0.28) }; return o; }
     if (prev && t - prev.b < RET) { // elengedés: kinyit, hátra-fel a tenyér mentén, majd vissza a készenléti pontba és leengedi
