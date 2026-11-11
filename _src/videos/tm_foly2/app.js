@@ -42,14 +42,15 @@ function rSpatPose(t) {
   const rest = { p: tv(SPR0), q: QR.clone() };
   if (t >= B(MIXP[0]) && t < B(MIXP[1])) return mixPose('R')(t);
   const scoopTo = (a, b, from, to, qWork, press = 0.012) => { const k1 = smooth(seg(t, B(a), B(a + (b - a) * 0.3))), k2 = smooth(seg(t, B(a + (b - a) * 0.3), B(a + (b - a) * 0.75))), k3 = smooth(seg(t, B(a + (b - a) * 0.75), B(b)));
-    const scoop = from.clone().add(V(-0.02, 0.008, 0)), over = to.clone().add(V(0.02, 0.03, 0)), into = to.clone().add(V(0.0, -press, 0));
-    if (k1 < 1) return { p: scoop.clone().add(V(0.03 * (1 - k1), 0.01 * Math.sin(Math.PI * k1), 0)), q: tiltR(0.35) };
-    if (k2 < 1) return { p: scoop.clone().lerp(over, k2).add(V(0, 0.05 * Math.sin(Math.PI * k2), 0)), q: tiltR(lerp(0.35, 0.15, k2)) };
-    return { p: over.clone().lerp(into, Math.sin(Math.PI * k3)), q: tiltR(lerp(0.15, 0.55, Math.sin(Math.PI * k3))) }; };
+    const tipP = (tip, a) => ({ p: tip.clone().add(V(SP.BL * Math.cos(a), SP.BL * Math.sin(a) + 0.0012, 0)), q: tiltR(a) });   // a penge hegye a megadott ponton
+    const sc0 = tipP(from.clone().add(V(0.02, 0.004, 0)), 0.3), sc1 = tipP(from.clone().add(V(-0.012, 0.012, 0)), 0.3), ov = tipP(to.clone().add(V(-0.015, 0.03, 0)), 0.2), dp = tipP(to.clone().add(V(-0.005, -press, 0)), 0.5);
+    if (k1 < 1) { const s = { p: sc0.p.clone().lerp(sc1.p, k1), q: sc0.q.clone() }; s.p.y += 0.006 * Math.sin(Math.PI * k1); return s; }
+    if (k2 < 1) return { p: sc1.p.clone().lerp(ov.p, k2).add(V(0, 0.05 * Math.sin(Math.PI * k2), 0)), q: sc1.q.clone().slerp(ov.q, k2) };
+    const k = Math.sin(Math.PI * k3); return { p: ov.p.clone().lerp(dp.p, k), q: ov.q.clone().slerp(dp.q, k) }; };
   const between = (a, b, A, Bq) => { const k = smooth(seg(t, B(a), B(b))); return { p: A.p.clone().lerp(Bq.p, k).add(V(0, 0.04 * Math.sin(Math.PI * k), 0)), q: A.q.clone().slerp(Bq.q, k) }; };
   const cupC = CUPTOP(CUP0[0], CUP0[2]);
   if (t >= B(FILL[0]) && t < B(STRIKE[1])) {
-    if (t < B(SCOOPS[0][0])) return between(FILL[0], SCOOPS[0][0], rest, { p: LUMPP.clone().add(V(0.01, 0.008, 0)), q: tiltR(0.35) });
+    if (t < B(SCOOPS[0][0])) return between(FILL[0], SCOOPS[0][0], rest, scoopTo(SCOOPS[0][0], SCOOPS[0][1], LUMPP, cupC));
     for (const [a, b] of SCOOPS) if (t >= B(a) && t < B(b)) return scoopTo(a, b, LUMPP, cupC, null);
     // lehúzás: a penge laposan, két húzás előre-hátra
     const sa = STRIKE[0], sb = STRIKE[1]; const st0 = { p: cupC.clone().add(V(0.035, 0.004, 0.03)), q: tiltR(0.05) };
@@ -57,10 +58,10 @@ function rSpatPose(t) {
     if (t < B(sb - 0.45)) { const u = seg(t, B(sa + 0.35), B(sb - 0.45)); const z = 0.03 * Math.cos(u * Math.PI * 2); return { p: cupC.clone().add(V(0.035, 0.0013, z)), q: tiltR(0.04) }; }
     return between(sb - 0.45, sb, { p: cupC.clone().add(V(0.035, 0.0013, 0.03)), q: tiltR(0.04) }, rest); }
   if (t >= B(SAMP[0]) && t < B(SAMP[1])) { const cc = CUPTOP(CUP0[0], CUP0[2]); const tin = V(TIN0[0], BT + 0.01, TIN0[2]);
-    const a = SAMP[0], b = SAMP[1]; if (t < B(a + 0.45)) return between(a, a + 0.45, rest, { p: cc.clone().add(V(0.01, 0.004, 0)), q: tiltR(0.4) }); if (t < B(b - 0.45)) return scoopTo(a + 0.45, b - 0.45, cc.clone().add(V(0.02, -0.004, 0)), tin, null, 0.004);
+    const a = SAMP[0], b = SAMP[1]; if (t < B(a + 0.45)) return between(a, a + 0.45, rest, { p: cc.clone().add(V(0.1, 0.04, 0)), q: tiltR(0.3) }); if (t < B(b - 0.45)) return scoopTo(a + 0.45, b - 0.45, cc.clone().add(V(0.02, -0.004, 0)), tin, null, 0.004);
     return between(b - 0.45, b, scoopTo(a + 0.45, b - 0.45, cc, tin, null, 0.004), rest); }
   if (t >= B(CFILL[0]) && t < B(CLEV[1])) { const cc = casPaste(); const a = CFILL[0], m = (CFILL[0] + CFILL[1]) / 2, b = CFILL[1];
-    if (t < B(a + 0.4)) return between(a, a + 0.4, rest, { p: LUMPP.clone().add(V(0.01, 0.008, 0)), q: tiltR(0.35) });
+    if (t < B(a + 0.4)) return between(a, a + 0.4, rest, { p: LUMPP.clone().add(V(0.1, 0.045, 0)), q: tiltR(0.3) });
     if (t < B(m)) return scoopTo(a + 0.4, m, LUMPP, cc, null, 0.004); if (t < B(b)) return scoopTo(m, b, LUMPP, cc, null, 0.004);
     const la = CLEV[0], lb = CLEV[1]; if (t < B(lb - 0.4)) { const u = seg(t, B(la), B(lb - 0.4)); return { p: cc.clone().add(V(0.035 + 0.025 * Math.sin(u * Math.PI * 4), 0.006, -0.02 + 0.04 * u)), q: tiltR(0.08) }; }
     return between(lb - 0.4, lb, { p: cc.clone().add(V(0.035, 0.006, 0.02)), q: tiltR(0.08) }, rest); }
