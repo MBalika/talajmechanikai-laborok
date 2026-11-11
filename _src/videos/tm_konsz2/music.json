@@ -1,0 +1,5 @@
+{ "genre": "funk", "key": 52, "seed": 7177,
+  "sections": [[0,4,"intro"],[4,8,"title"],[8,14,"grooveA"],[14,23,"grooveA2"],[23,32,"drive"],[32,42,"build"],[42,50,"half"],[50,62,"grooveA"],[62,74,"grooveB"],[74,84,"grooveA2"],[84,88,"grooveA"],[88,92,"outro"]],
+  "transitions": {"risers": [[3,1],[13,1],[22,1],[31,1],[41,1],[61,1],[83,1]], "impacts": [4,8,14,23,32,42,50,62,74,84,88], "downs": [42], "revcym": [19,57,79]},
+  "fxGain": 0.8,
+  "live": { "style": "cinematic", "seed": 7177, "styleMap": [[0,"cinematic"],[14,"acoustic"],[42,"cinematic"],[50,"acoustic"],[84,"cinematic"]] } }
