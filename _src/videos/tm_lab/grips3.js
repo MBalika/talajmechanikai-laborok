@@ -104,6 +104,18 @@ export function pinchSide(side, c, R, out, near, o = {}) {
   const pc = C.clone().addScaledVector(On, o.palmOut ?? 0.07).add(V(0, o.palmH ?? 0.04, 0));
   return tipsGrip(side, wristFromPalm(fr, pc), fr, tips, { flex: { R: [1.0, 1.1, 0.6], P: [1.05, 1.15, 0.6] }, pole: o.pole });
 }
+// 3e) NÉGYZETES KERET / LAP FELÜLRŐL (precíziós fogás, mint a korongfogás, de sík oldallapokon): a hüvelyk a közeli lap közepén, a mutató-,
+//     középső és gyűrűsujj a túlsó lapon egy vonalban. c: a tárgy tetejének közepe, a: fél szélesség (a lapok ±a-nál, a tárgy x/z tengelyeihez igazítva),
+//     H: magasság, aim: vízszintes irány a test felől (a domináns tengely választja ki a közeli és a túlsó lapot)
+export function boxTop(side, c, a, H, aim, o = {}) {
+  const A = horiz(aim); const ax = Math.abs(A.x) > Math.abs(A.z) ? V(Math.sign(A.x), 0, 0) : V(0, 0, Math.sign(A.z));
+  const fr = frame(side, A, V(0, -1, 0)); const C = tv(c); const ym = -(o.depth ?? Math.min(H * 0.5, 0.009)); const d = a + FSKIN * 0.9;
+  let lt = V(ax.z, 0, -ax.x); if (lt.dot(fr.L) < 0) lt.negate(); const sp = o.spread ?? Math.min(0.022, a * 0.75);
+  const far = (s) => C.clone().addScaledVector(ax, d).addScaledVector(lt, s).add(V(0, ym, 0));
+  const tips = { T: C.clone().addScaledVector(ax, -d).addScaledVector(lt, o.thumbS ?? 0.006).add(V(0, ym, 0)), I: far(sp), M: far(0), R: far(-sp) };
+  const pc = C.clone().addScaledVector(ax, o.fwd ?? Math.max(-0.01, d - 0.075)).add(V(0, o.palmH ?? 0.045, 0));
+  return tipsGrip(side, wristFromPalm(fr, pc), fr, tips, { flex: { P: o.pinkyFlex || [0.9, 1.0, 0.55] }, pole: o.pole });
+}
 // 4) VÉKONY ÁLLÓ LAP FELÜLRŐL (acélvonalzó, lemez éle): a tenyér a lap felső éle fölött lefelé néz, a hüvelyk párnája a közeli,
 //    a mutató- és középső ujj párnája a túlsó oldalon. p: a lap felső élének pontja, n: a lap normálisa a közeli oldaltól a túlsó felé, t: vastagság
 export function bladeTop(side, p, n, t, o = {}) {

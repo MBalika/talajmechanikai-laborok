@@ -1,4 +1,0 @@
-{ "genre": "funk", "key": 55, "seed": 9923,
-  "sections": [[0,4,"intro"],[4,8,"title"],[8,15,"grooveA"],[15,20,"build"],[20,28,"drive"],[28,32,"grooveA2"],[32,38,"drop"],[38,42,"half"],[42,46,"grooveB"],[46,51,"outro"]],
-  "transitions": {"risers": [[3,1],[19,1],[31,1]], "impacts": [4,8,20,32,38], "downs": [38], "revcym": [15]},
-  "fxGain": 0.8, "live": { "style": "funk", "seed": 9923 } }
