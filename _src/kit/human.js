@@ -200,8 +200,68 @@ function twistForearm(body, B, sd, q, wt) {
 // Önbeálló kéz: rc.palm (a tenyér normálisa a tárgy felé, világ), rc.contact (a tenyérközép érintési pontja, világ), rc.axis (hengernél a tengely),
 // rc.gap (tenyér–felszín távolság). Az ujjak iránya az alkarból adódik (henger: a tengelyre merőleges két irány közül az alkarhoz közelebbi,
 // sík: az alkar vetülete a síkra), így a csukló természetesen áll; a hüvelykujj iránya a kéz oldalából következik.
+// ---- kar-megoldó rögzített kézkerethez (2026-11-11): a könyök helyét (a váll–csukló tengely körüli elforgatást) és – ha a fogás engedi –
+// a kéz elfordulását egy szabad tengely körül (rc.free: henger tengelye, két ujjhegy egyenese, felület normálisa) úgy választjuk,
+// hogy a csukló a természetes tartományban maradjon: hajlítás/feszítés, sugár-/singcsonti közelítés, alkar-csavarás (pronáció/szupináció),
+// és a könyök ne menjen a törzsbe, ne emelkedjen a váll fölé. Így a kéz nem „fordul ki”, a csukló nem törik meg.
+const DEG = 180 / Math.PI;
+const _pen = (x, lo, hi) => x < lo ? (lo - x) * (lo - x) : x > hi ? (x - hi) * (x - hi) : 0;
+function segDist3(p, a, b) { const ab = b.clone().sub(a); const k = THREE.MathUtils.clamp(p.clone().sub(a).dot(ab) / ab.lengthSq(), 0, 1); return p.distanceTo(a.clone().addScaledVector(ab, k)); }
+let _tNow = 0; const _ARM_MEM = new WeakMap();
+export function armCostParts(sd, S, E, W, F, P, Lh) {
+  const d = W.clone().sub(E).normalize();
+  const flex = Math.atan2(-d.dot(P), d.dot(F)) * DEG, dev = Math.atan2(-d.dot(Lh), d.dot(F)) * DEG;
+  const ua = E.clone().sub(S); const h = ua.clone().cross(d); let pr = 0; const hl = h.length();
+  if (hl > 0.08 * ua.length()) { h.divideScalar(hl); const Ln = h.clone().cross(d); const Lp = Lh.clone().addScaledVector(d, -Lh.dot(d)); if (Lp.lengthSq() > 1e-4) { Lp.normalize(); pr = Math.atan2(Ln.clone().cross(Lp).dot(d), Ln.dot(Lp)) * DEG * (sd === 'R' ? -1 : 1); } }
+  return { flex, dev, pr };
+}
+function solveArmFrame(sd, body, B, W0, F0, P0, free, poleHint, memo) {
+  const S = modelPos(B['uarm.' + sd], body, new THREE.Vector3()), hips = modelPos(B.hips, body, new THREE.Vector3()), neck = modelPos(B.neck, body, new THREE.Vector3());
+  const L = ARM[sd], sg = sd === 'L' ? 1 : -1;
+  const frameAt = (a) => { if (!free || Math.abs(a) < 1e-9) return { W: W0, F: F0, P: P0 }; const q = new THREE.Quaternion().setFromAxisAngle(free.ax, a); return { W: W0.clone().sub(free.c).applyQuaternion(q).add(free.c), F: F0.clone().applyQuaternion(q), P: P0.clone().applyQuaternion(q) }; };
+  const near = memo && Math.abs(memo.t - _tNow) < 0.25;
+  const cost = (fr, a, phi, out) => {
+    const t = fr.W.clone().sub(S); const dist = t.length(); const n = t.divideScalar(dist); const dd = THREE.MathUtils.clamp(dist, Math.abs(L.la - L.lb) + 0.01, L.la + L.lb - 0.003);
+    const ca = (L.la * L.la + dd * dd - L.lb * L.lb) / (2 * L.la * dd), sa = Math.sqrt(Math.max(0, 1 - ca * ca));
+    let u1 = poleHint.clone().addScaledVector(n, -poleHint.dot(n)); if (u1.lengthSq() < 1e-6) u1.set(0, -1, 0).addScaledVector(n, n.y); u1.normalize(); const u2 = n.clone().cross(u1);
+    const pw = u1.clone().multiplyScalar(Math.cos(phi)).addScaledVector(u2, Math.sin(phi)); const E = S.clone().addScaledVector(n, L.la * ca).addScaledVector(pw, L.la * sa);
+    const Wr = S.clone().addScaledVector(n, dd);
+    const Lh = (sd === 'L' ? new THREE.Vector3().crossVectors(fr.P, fr.F) : new THREE.Vector3().crossVectors(fr.F, fr.P)).normalize();
+    const { flex, dev, pr } = armCostParts(sd, S, E, Wr, fr.F, fr.P, Lh);
+    let c = 1.0 * _pen(flex, -38, 42) + 2.2 * _pen(dev, -24, 14) + 0.6 * _pen(pr, -60, 72) + 0.035 * flex * flex + 0.07 * dev * dev + 0.008 * pr * pr;
+    const lat = sg * (E.x - S.x);                                       // a könyök oldalra (+) vagy befelé (−) a vállhoz képest
+    const dT = segDist3(E, hips, neck), dM = segDist3(E.clone().add(Wr).multiplyScalar(0.5), hips, neck);
+    c += 3e4 * Math.max(0, 0.165 - dT) ** 2 + 2e4 * Math.max(0, 0.135 - dM) ** 2 + 1.2e4 * Math.max(0, E.y - S.y + 0.06) ** 2 + 2e4 * Math.max(0, -0.03 - lat) ** 2 + 3e3 * Math.max(0, S.z - 0.22 - E.z) ** 2;
+    c += 18 * (1 - Math.cos(phi)) + 45 * a * a; if (free && free.minDy !== undefined) c += 3e4 * Math.max(0, free.c.y + free.minDy - fr.W.y) ** 2;   // a kéz a fogáspont fölött maradjon (pl. lapos tárgy felvétele az asztalról)
+    if (near) { const dp = Math.atan2(Math.sin(phi - memo.phi), Math.cos(phi - memo.phi)); c += 30 * dp * dp + 30 * (a - memo.a) ** 2; }
+    if (out) Object.assign(out, { flex, dev, pr, E, pw, c });
+    return c; };
+  const A0 = free ? free.a0 : 0, A1 = free ? free.a1 : 0, NA = free ? 13 : 1, NP = 36;
+  let best = { c: Infinity, a: 0, phi: 0 };
+  for (let i = 0; i < NA; i++) { const a = NA === 1 ? 0 : A0 + (A1 - A0) * i / (NA - 1); const fr = frameAt(a);
+    for (let j = 0; j < NP; j++) { const phi = -Math.PI + 2 * Math.PI * j / NP; const c = cost(fr, a, phi); if (c < best.c) best = { c, a, phi }; } }
+  if (near) { const fr = frameAt(memo.a); const c = cost(fr, memo.a, memo.phi); if (c < best.c) best = { c, a: memo.a, phi: memo.phi }; }
+  let sa = NA === 1 ? 0 : (A1 - A0) / (NA - 1) / 2, sp = Math.PI / NP;
+  for (let it = 0; it < 3; it++) { const b0 = { ...best };
+    for (let i = -2; i <= 2; i++) { const a = NA === 1 ? 0 : THREE.MathUtils.clamp(b0.a + sa * i / 2, Math.min(A0, A1), Math.max(A0, A1)); const fr = frameAt(a);
+      for (let j = -2; j <= 2; j++) { const phi = b0.phi + sp * j / 2; const c = cost(fr, a, phi); if (c < best.c) best = { c, a, phi }; } }
+    sa /= 2; sp /= 2; }
+  const fr = frameAt(best.a); const info = {}; cost(fr, best.a, best.phi, info);
+  return { W: fr.W, F: fr.F, P: fr.P, pole: info.pw, a: best.a, phi: best.phi, info };
+}
 function autoHand(body, B, sd, rc, pole) {
   body.getWorldQuaternion(_qb); const qi = _qb.clone().invert();
+  if (rc.W && rc.F) { // rögzített kézkeret (2026-11-11): a csukló helye (W) és az ujjak (F) / tenyér (palm) iránya adott – pontos ujjhegy-célokhoz
+    const wt = rc.w ?? 1, ua = B['uarm.' + sd], fa = B['farm.' + sd], ha = B['hand.' + sd];
+    let P = rc.palm.clone().applyQuaternion(qi).normalize(); let F = rc.F.clone().applyQuaternion(qi); F.addScaledVector(P, -F.dot(P)).normalize(); let Wl = body.worldToLocal(rc.W.clone());
+    const free = rc.free ? { ax: rc.free.ax.clone().applyQuaternion(qi).normalize(), c: body.worldToLocal(rc.free.c.clone()), a0: rc.free.a0, a1: rc.free.a1, minDy: rc.free.minDy } : null;
+    let mem = _ARM_MEM.get(B); if (!mem) { mem = {}; _ARM_MEM.set(B, mem); } const sol = solveArmFrame(sd, body, B, Wl, F, P, free, pole, mem[sd]); mem[sd] = { t: _tNow, a: sol.a, phi: sol.phi };
+    Wl = sol.W; F = sol.F; P = sol.P; pole = sol.pole; rc._arm = { ...sol.info, a: sol.a, phi: sol.phi }; rc._W = body.localToWorld(Wl.clone());
+    const q0a = ua.quaternion.clone(), q0b = fa.quaternion.clone(); ik2(body, ua, fa, ARM[sd], Wl, pole, 1);
+    if (wt < 1) { ua.quaternion.copy(q0a); ua.updateMatrixWorld(true); fa.quaternion.copy(q0b); fa.updateMatrixWorld(true); ik2(body, ua, fa, ARM[sd], Wl, pole, wt); }
+    const Lx = sd === 'L' ? new THREE.Vector3().crossVectors(P, F) : new THREE.Vector3().crossVectors(F, P); Lx.normalize();
+    const q = frameQuat(F, Lx).multiply(frameQuat(HAND[sd].f0, HAND[sd].l0).invert()); if (wt < 1) q.copy(modelQuat(ha, body, new THREE.Quaternion()).slerp(q, wt));
+    twistForearm(body, B, sd, q, wt); setModelQuat(ha, body, q); rc._wrist = rc._W.clone(); return; }
   const Ph = rc.palm.clone().applyQuaternion(qi).normalize(), A = rc.axis ? rc.axis.clone().applyQuaternion(qi).normalize() : null;
   const Cax = rc.axisPt ? body.worldToLocal(rc.axisPt.clone()) : null, rad = rc.radius ?? 0, C0 = body.worldToLocal(rc.contact.clone());
   const Fhint = rc.fdir ? rc.fdir.clone().applyQuaternion(qi).normalize() : null;
@@ -226,6 +286,7 @@ function autoHand(body, B, sd, rc, pole) {
   rc._wrist = body.localToWorld(fr.W.clone()); // ellenőrzéshez (tools/handcheck.py)
 }
 export function animateWorkers(t) {
+  _tNow = t;
   for (const w of WORKERS) {
     const u = w.userData, B = u.B, body = u.body, s = u.seed; const p = w.position;
     if (u.lastT !== undefined) { const dt = t - u.lastT; if (dt > 0 && dt < 0.25) { const dx = p.x - u.lx, dz = p.z - u.lz, d = Math.hypot(dx, dz); u.spd = THREE.MathUtils.lerp(u.spd, d / dt, 0.35); u.ph += d / 0.66 * Math.PI;
@@ -296,7 +357,7 @@ export function animateWorkers(t) {
       if (g > 0) { ik2(body, B['uarm.R'], B['farm.R'], ARM.R, shR.clone().add(new THREE.Vector3(-0.12, 0.1, 0.6)), new THREE.Vector3(-0.6, -1, 0), g); curlR = 0.5 + 0.4 * g; pitch -= 0.06 * g; }
     }
     for (const sd of ['L', 'R']) { const lat = ARM[sd].lat; const c = sd === 'L' ? curlL : curlR; B['fing.' + sd].quaternion.setFromAxisAngle(lat, (sd === 'L' ? -1 : 1) * c * HUMAN_CFG.curlSign); }
-    for (const sd of ['L', 'R']) { const fp = u.reach && u.reach[sd] && u.reach[sd].fingers; setFingerPose(B, sd, fp ? FPOSE[fp] && FPOSE[fp][sd] : null); u['fp' + sd] = fp || null; }
+    for (const sd of ['L', 'R']) { const fp = u.reach && u.reach[sd] && u.reach[sd].fingers; setFingerPose(B, sd, fp ? resolvePose(fp, sd) : null); u['fp' + sd] = fp ? (typeof fp === 'string' ? fp : (fp.to || fp.a || 'mix')) : null; }
     rot(B.neck, pitch * 0.4, look * 0.35 * ia, 0); rot(B.head, pitch * 0.6, look * 0.6 * ia, 0.02 * sw);
     if (u.post) { body.updateMatrixWorld(true); u.post(w); } // a kézben tartott tárgyak (pl. toll) a kész testhelyzethez igazodnak
   }
@@ -349,3 +410,61 @@ function setFingerPose(B, sd, pose) {
   if (pose) B['fing.' + sd].quaternion.identity();
   for (const c of 'TIMRP') for (let j = 1; j <= 3; j++) { const b = B['fing' + c + j + '.' + sd]; if (pose && pose[c]) b.quaternion.copy(pose[c][j - 1]); else b.quaternion.identity(); }
 }
+
+// ---------- ujjpózok ízületenként (2026-11-11) ----------
+// defineFingerPose(név, spec): a négy ujj és a hüvelykujj ízületi szögei. spec.wrap = r: henger körülfogása (a tengely a tenyér
+// keresztirányában, a tenyérközéptől gap + r távolságra – ugyanaz a geometria, mint a kit/grip.js gripCylinder + autoHand esetén);
+// spec.flex = { I:[a,b,c], M, R, P } kézzel; spec.thumb: 'rest' | { wrap: r } | { pinch: d, to: 'I' } | { tgt: [F, L, P] } (csuklóhoz képest, kéz-keretben).
+// A reach.fingers lehet név, vagy { a: név, b: név, k: 0…1 } – két póz átmenete (nyitás/zárás).
+const FING_SKIN = 0.02, PALM_SKIN = 0.028;
+function handFrame0(sd) { const F0 = HAND[sd].f0.clone(), L0 = ARM[sd].lat.clone().addScaledVector(HAND[sd].f0, -ARM[sd].lat.dot(HAND[sd].f0)).normalize(); const P0 = (sd === 'L' ? new THREE.Vector3().crossVectors(F0, L0) : new THREE.Vector3().crossVectors(L0, F0)).normalize(); return { W: RB['hand.' + sd].clone(), F0, L0, P0 }; }
+function solveWrap(sd, c, fr, r, gap) { // a 2., 3. ízület és az ujjhegy a henger felszínén (r + bőr)
+  const Cc = fr.W.clone().addScaledVector(fr.F0, 0.065).addScaledVector(fr.P0, gap + r), ax = fr.L0; const want = r + FING_SKIN; let best = null;
+  const dax = (p) => { const d = p.clone().sub(Cc); d.addScaledVector(ax, -d.dot(ax)); return d.length(); };
+  for (let a = 0; a <= 1.75; a += 0.05) for (let b = 0; b <= 1.9; b += 0.05) { const g = Math.min(1.2, 0.7 * b + 0.05); const pts = chainFK(sd, c, [flexQ(sd, a), flexQ(sd, b), flexQ(sd, g)]);
+    let cost = 0; for (let j = 1; j <= 3; j++) { const e = dax(pts[j]) - want; cost += (e < 0 ? 6 * e * e : e * e) * (j === 3 ? 0.6 : 1); }
+    cost += 0.0004 * (a * a + b * b); if (!best || cost < best.cost) best = { cost, q: [flexQ(sd, a), flexQ(sd, b), flexQ(sd, g)], ang: [a, b, g] }; }
+  return best; }
+function solveThumb(sd, fr, costFn) { const T1 = RB['fingT1.' + sd], T2 = RB['fingT2.' + sd]; const tdir = T2.clone().sub(T1).normalize(); let tax = new THREE.Vector3().crossVectors(tdir, fr.P0).normalize();
+  { const t0 = chainFK(sd, 'T', [new THREE.Quaternion(), new THREE.Quaternion(), new THREE.Quaternion()])[3], t1 = chainFK(sd, 'T', [new THREE.Quaternion(), qAx(tax, 0.4), qAx(tax, 0.4)])[3]; if (t1.clone().sub(t0).dot(fr.P0) < 0) tax.negate(); }
+  let best = null; const ev = (a, b, g, fl) => { const q1 = qAx(fr.F0, a).multiply(qAx(fr.P0, b)).multiply(qAx(fr.L0, g)); const qs = [q1, qAx(tax, fl), qAx(tax, fl * 0.9)]; const tp = chainFK(sd, 'T', qs);
+    const cost = costFn(tp) + 0.004 * (a * a + b * b + g * g) + 0.002 * fl; if (!best || cost < best.cost) best = { cost, qs, tp, x: [a, b, g, fl] }; };
+  for (let a = -1.4; a <= 1.401; a += 0.2) for (let b = -1.4; b <= 1.401; b += 0.2) for (let g = -1.4; g <= 1.401; g += 0.2) for (const fl of [0.1, 0.35, 0.6, 0.85]) ev(a, b, g, fl);
+  const x0 = best.x.slice(); for (let a = -0.2; a <= 0.201; a += 0.05) for (let b = -0.2; b <= 0.201; b += 0.05) for (let g = -0.2; g <= 0.201; g += 0.05) for (const df of [-0.1, 0, 0.1]) ev(x0[0] + a, x0[1] + b, x0[2] + g, Math.max(0, x0[3] + df));
+  return best; }
+function solveTip(sd, c, T) { let best = null; // az ujjhegy a célpontba (a 3. ízület a 2. 70 %-a)
+  for (let a = -0.35; a <= 1.75; a += 0.025) for (let b = 0; b <= 1.9; b += 0.025) { const g = Math.min(1.25, 0.7 * b); const q = [flexQ(sd, a), flexQ(sd, b), flexQ(sd, g)]; const tp = chainFK(sd, c, q)[3];
+    const cost = tp.distanceTo(T) ** 2 + 2e-6 * (a * a + b * b); if (!best || cost < best.cost) best = { cost, q }; }
+  return best.q; }
+const toW = (fr, v) => fr.W.clone().addScaledVector(fr.F0, v[0]).addScaledVector(fr.L0, v[1]).addScaledVector(fr.P0, v[2]);
+export function defineFingerPose(name, spec) {
+  const out = {};
+  for (const sd of ['L', 'R']) {
+    const fr = handFrame0(sd), pose = {}; const gap = spec.gap ?? PALM_SKIN;
+    for (const c of 'IMRP') { if (spec.tips && spec.tips[c]) pose[c] = solveTip(sd, c, toW(fr, spec.tips[c])); else if (spec.wrap !== undefined) pose[c] = solveWrap(sd, c, fr, spec.wrap + (c === 'P' ? 0.004 : 0), gap).q; else { const f = (spec.flex && spec.flex[c]) || [0.15, 0.2, 0.1]; pose[c] = f.map(a => flexQ(sd, a)); } }
+    const th = spec.tips && spec.tips.T ? { tgt: spec.tips.T } : (spec.thumb ?? 'rest');
+    if (th === 'rest') pose.T = [new THREE.Quaternion(), new THREE.Quaternion(), new THREE.Quaternion()];
+    else { let costFn;
+      if (th.wrap !== undefined) { const r = th.wrap, Cc = fr.W.clone().addScaledVector(fr.F0, 0.065).addScaledVector(fr.P0, gap + r); const ix = chainFK(sd, 'I', pose.I);
+        const tgt = ix[2].clone().addScaledVector(fr.L0, 0.022); // a hüvelyk hegye a mutatóujj középső perce mellett, a henger túloldalán
+        costFn = (tp) => { const dax = (p) => { const d = p.clone().sub(Cc); d.addScaledVector(fr.L0, -d.dot(fr.L0)); return d.length(); }; let c = 0; for (const j of [2, 3]) { const e = dax(tp[j]) - (r + FING_SKIN * 0.85); c += (e < 0 ? 8 : 1) * e * e * 1e3; } return c + tp[3].distanceTo(tgt) ** 2 * 300; }; }
+      else if (th.pinch !== undefined) { const ft = chainFK(sd, th.to || 'I', pose[th.to || 'I'])[3]; costFn = (tp) => (tp[3].distanceTo(ft) - th.pinch) ** 2 * 1e4 + Math.max(0, tp[3].clone().sub(ft).dot(fr.P0)) * 30; }
+      else if (th.tgt) { const T = toW(fr, th.tgt); costFn = (tp) => tp[3].distanceTo(T) ** 2 * 1e4; }
+      pose.T = solveThumb(sd, fr, costFn).qs; }
+    out[sd] = pose; }
+  FPOSE[name] = out; return out;
+}
+function resolvePose(fp, sd) {
+  if (typeof fp === 'string') return FPOSE[fp] && FPOSE[fp][sd];
+  const A = FPOSE[fp.a] && FPOSE[fp.a][sd], Bp = FPOSE[fp.b] && FPOSE[fp.b][sd]; if (!A) return Bp; if (!Bp) return A; const k = Math.max(0, Math.min(1, fp.k ?? 0));
+  const o = {}; for (const c of 'TIMRP') o[c] = [0, 1, 2].map(j => A[c][j].clone().slerp(Bp[c][j], k)); return o;
+}
+export function fingerPoseNames() { return Object.keys(FPOSE); }
+
+// a kéz nyugalmi kerete (csukló, ujjirány, oldalirány a mutatóujj felé, tenyér-normális) – a tips-célok ebben értendők
+export function handRestInfo(sd) { const fr = handFrame0(sd); const tips = {}; for (const c of 'TIMRP') tips[c] = V3(I['tip' + c + '.' + sd]).sub(fr.W); return { W: fr.W.clone(), F0: fr.F0.clone(), L0: fr.L0.clone(), P0: fr.P0.clone(), knuckles: 'IMRP'.split('').map(c => RB['fing' + c + '1.' + sd].clone().sub(fr.W)), thumbBase: RB['fingT1.' + sd].clone().sub(fr.W) }; }
+// ellenőrzéshez: az öt ujjhegy világkoordinátában (tools/gripdbg.py)
+export function fingerTips(w, sd) { const B = w.userData.B; const o = {}; for (const c of 'TIMRP') { const b = B['fing' + c + '3.' + sd]; b.updateWorldMatrix(true, false); o[c] = b.localToWorld(V3(I['tip' + c + '.' + sd]).sub(RB['fing' + c + '3.' + sd])); } return o; }
+if (typeof window !== 'undefined') window.__fingerTips = fingerTips;
+// egy definiált póz ujjhegyei a nyugalmi modelltérben, a csuklóhoz képest (a grips2.js kétpontos fogásaihoz)
+export function poseTipsRest(name, sd) { const p = FPOSE[name] && FPOSE[name][sd]; if (!p) return null; const W = RB['hand.' + sd]; const o = {}; for (const c of 'TIMRP') o[c] = chainFK(sd, c, p[c])[3].clone().sub(W); return o; }
