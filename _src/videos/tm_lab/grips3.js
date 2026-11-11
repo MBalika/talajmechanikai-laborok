@@ -92,6 +92,18 @@ export function rimOblique(side, p, N, h, R, fwd, o = {}) {
   const W = wristFromPalm(fr, pc);
   return tipsGrip(side, W, fr, tips, { flex: { P: [0.6, 0.7, 0.42] }, pole: o.pole });
 }
+// 3d) KIS GYŰRŰ CSÍPÉSE OLDALT-FELÜLRŐL (precíziós csípés): a tenyér a tárgy mellett, fölötte, lefelé és kissé a tárgy felé néz, az ujjak a tárgy felé
+//     mutatnak; a hüvelyk a közeli (a test felőli), a mutató- és a középső ujj a túlsó oldalon fogja a palástot a perem alatt; a tengely fölötti tér szabad
+//     marad (pl. a kitolónak). c: a tengely pontja a perem magasságában, R: külső sugár, out: vízszintes irány a tengelytől a kéz felé, near: a test felé
+export function pinchSide(side, c, R, out, near, o = {}) {
+  const On = horiz(out), Nr = horiz(near); const C = tv(c); const dx = o.dx ?? 0.55 * R, dy = -(o.depth ?? 0.005);
+  const zz = Math.sqrt(Math.max(1e-8, R * R - dx * dx)) + FSKIN * 0.9;
+  const at = (s, ex = 0, ey = 0) => C.clone().addScaledVector(On, dx + ex).addScaledVector(Nr, s * zz).add(V(0, dy + ey, 0));
+  const fy = o.fy ?? 0.5; const F = On.clone().multiplyScalar(-Math.sqrt(1 - fy * fy)).add(V(0, -fy, 0)); const fr = frame(side, F, On.clone().multiplyScalar(-0.25).add(V(0, -0.97, 0)));
+  const tips = { T: at(1), I: at(-1), M: at(-0.8, 0.008, -0.003) };
+  const pc = C.clone().addScaledVector(On, o.palmOut ?? 0.07).add(V(0, o.palmH ?? 0.04, 0));
+  return tipsGrip(side, wristFromPalm(fr, pc), fr, tips, { flex: { R: [1.0, 1.1, 0.6], P: [1.05, 1.15, 0.6] }, pole: o.pole });
+}
 // 4) VÉKONY ÁLLÓ LAP FELÜLRŐL (acélvonalzó, lemez éle): a tenyér a lap felső éle fölött lefelé néz, a hüvelyk párnája a közeli,
 //    a mutató- és középső ujj párnája a túlsó oldalon. p: a lap felső élének pontja, n: a lap normálisa a közeli oldaltól a túlsó felé, t: vastagság
 export function bladeTop(side, p, n, t, o = {}) {
